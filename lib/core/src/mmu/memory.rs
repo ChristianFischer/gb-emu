@@ -16,6 +16,8 @@
  */
 
 use std::cmp::max;
+
+#[cfg(feature = "file_io")]
 use std::io;
 
 use crate::boot_rom::BootRom;
@@ -136,6 +138,7 @@ impl Memory {
     }
 
     /// Save the cartridge RAM, if any.
+    #[cfg(feature = "file_io")]
     pub fn save_cartridge_ram_to_file_if_any(&self) -> io::Result<()> {
         if let Some(cartridge) = &self.cartridge {
             cartridge.save_ram_to_file_if_any()?;

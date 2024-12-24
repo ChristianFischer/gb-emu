@@ -15,11 +15,15 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use std::fs::File;
-use std::io;
-use std::io::{Read, Write};
-use std::path::Path;
+#[cfg(feature = "file_io")]
+use std::{
+    fs::File,
+    io,
+    io::{Read, Write},
+    path::Path
+};
 
+use crate::utils::ioerr;
 pub use dynamic_size::*;
 pub use fixed_size::*;
 
@@ -47,6 +51,7 @@ pub trait MemoryData {
     }
 
     /// Save the RAM image into a file.
+    #[cfg(feature = "file_io")]
     fn save_to_file(&self, filepath: &Path) -> io::Result<()> {
         let mut file = File::create(filepath)?;
         file.write_all(self.as_slice())?;
@@ -55,6 +60,7 @@ pub trait MemoryData {
     }
 
     /// Load the RAM image from a file.
+    #[cfg(feature = "file_io")]
     fn read_from_file(&mut self, filepath: &Path) -> io::Result<()> {
         let mut file = File::open(filepath)?;
         file.read_exact(self.as_slice_mut())?;
@@ -65,12 +71,12 @@ pub trait MemoryData {
 
     /// Reads the RAM data from a byte array slice.
     /// Fails if the size of the byte array is not equal to the size of the RAM data.
-    fn read_from_bytes(&mut self, bytes: &[u8]) -> io::Result<()> {
+    fn read_from_bytes(&mut self, bytes: &[u8]) -> Result<(), ioerr::ErrorCode> {
         if bytes.len() != self.size() {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidData,
-                format!("Invalid size of bytes: {} (expected: {})", bytes.len(), self.size())
-            ));
+            return Err(ioerr::ErrorCode::InvalidFileSize(ioerr::InvalidFileSizeError {
+                actual: bytes.len(),
+                expected: self.size()
+            }));
         }
 
         self.as_slice_mut().copy_from_slice(bytes);

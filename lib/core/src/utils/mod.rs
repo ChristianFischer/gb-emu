@@ -20,6 +20,8 @@ pub use serializable_array::SerializableArray;
 pub use serializable_buffer::SerializableBuffer;
 pub use utils::*;
 
+pub mod ioerr;
+
 mod serde;
 mod serializable_array;
 mod serializable_buffer;

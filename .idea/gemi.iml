@@ -13,6 +13,8 @@
       <sourceFolder url="file://$MODULE_DIR$/bin/gemi-player/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/bin/gemi-debugger/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/lib/utils/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/test_nostd/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/test_nostd/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
       <excludeFolder url="file://$MODULE_DIR$/tests/test_suite/res/test_roms" />
     </content>

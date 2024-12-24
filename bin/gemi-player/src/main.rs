@@ -17,9 +17,9 @@
 
 extern crate core;
 
-use std::{env, time};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
+use std::{env, time};
 
 use gemi_core::boot_rom::BootRom;
 use gemi_core::cartridge::Cartridge;
@@ -128,7 +128,9 @@ fn make_gameboy_instance() -> Result<GameBoy, String> {
                 let filename = args.next()
                     .expect("'--boot' needs to be followed by the path to a valid boot rom");
 
-                let boot_rom = BootRom::load_file(&filename).unwrap();
+                let file_path = Path::new(&filename);
+
+                let boot_rom = BootRom::load_file(file_path).unwrap();
                 builder.set_boot_rom(boot_rom);
             }
 

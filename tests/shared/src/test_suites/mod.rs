@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 by Christian Fischer
+ * Copyright (C) 2022-2024 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,6 +44,12 @@ pub struct TestSuite {
     /// The test suite's file visitor.
     visitor: FileVisitor,
 }
+
+
+/// A list of basic test suites.
+pub const BASIC_TEST_SUITES : &'static [TestSuite] = &[
+    TestSuite { name: "blargg",     title: "Blargg",    subdir: "blargg",               visitor: visit_tests_blargg    },
+];
 
 
 /// A list of all known test suites.

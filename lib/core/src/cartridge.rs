@@ -15,17 +15,21 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#[cfg(feature = "file_io")]
+use std::{
+    fs::File,
+    io,
+    io::Read,
+    path::{Path, PathBuf}
+};
+
 use std::fmt::{Display, Formatter};
-use std::fs::File;
-use std::io;
-use std::io::Read;
 use std::ops::Range;
-use std::path::{Path, PathBuf};
 
 use crate::mmu::mbc::MemoryBankController;
 use crate::mmu::memory_data::{MemoryData, MemoryDataDynamic};
+use crate::utils::ioerr;
 use crate::utils::{as_hex_digit, SerializableBuffer};
-
 
 pub const FILE_EXT_GB:  &str = "gb";
 pub const FILE_EXT_GBC: &str = "gbc";
@@ -44,6 +48,11 @@ pub enum GameBoyColorSupport {
 
     /// CGB is required to run this cartridge
     Required
+}
+
+
+pub enum ErrorCode {
+    
 }
 
 
@@ -76,6 +85,7 @@ pub struct RomData {
     serde(try_from = "CartridgeSerdeHelper", into = "CartridgeSerdeHelper")
 )]
 pub struct Cartridge {
+    #[cfg(feature = "file_io")]
     source_file: Option<PathBuf>,
 
     title: String,
@@ -104,6 +114,7 @@ pub struct Cartridge {
 
 
 /// Helper struct to implement serialization via serde by only serializing RAM and ROM.
+#[allow(dead_code)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 struct CartridgeSerdeHelper {
     rom: SerializableBuffer<u8>,
@@ -180,7 +191,7 @@ impl RomData {
             };
         }
 
-        return String::new();
+        String::new()
     }
 }
 
@@ -198,6 +209,7 @@ pub fn compute_checksum(data: &[u8]) -> u8 {
 
 
 /// Load a file into a byte buffer.
+#[cfg(feature = "file_io")]
 fn load_file(file_path: &Path) -> io::Result<Vec<u8>> {
     let mut file   = File::open(file_path)?;
     let metadata   = file.metadata()?;
@@ -214,6 +226,7 @@ impl Cartridge {
     /// If a RAM file with the same name exists, it tries to load it as well.
     /// Failing to load the RAM file will cause an error, but if no RAM file
     /// exists, the cartridge will be loaded with uninitialized RAM.
+    #[cfg(feature = "file_io")]
     pub fn load_files_with_default_ram(rom_file: &Path) -> io::Result<Cartridge> {
         let ram_file = rom_file.with_extension(FILE_EXT_RAM);
 
@@ -232,22 +245,31 @@ impl Cartridge {
 
 
     /// Loads a cartridge from a ROM file.
+    #[cfg(feature = "file_io")]
     pub fn load_file(rom_file: &Path) -> io::Result<Cartridge> {
         Self::load_files(rom_file, None)
     }
 
 
     /// Loads a cartridge and it's RAM image from files.
+    #[cfg(feature = "file_io")]
     pub fn load_files(rom_file: &Path, ram_file: Option<&Path>) -> io::Result<Cartridge> {
         // load the cartridge from the ROM file
         let rom_data      = load_file(rom_file)?;
-        let mut cartridge = Self::load_from_bytes(rom_data, None)?;
+        let mut cartridge = Self::load_from_bytes(rom_data, None)
+                .map_err(Into::<io::Error>::into)?;
 
         // when the cartridge has battery powered RAM support, load the RAM file
         if cartridge.has_ram && cartridge.has_battery {
             if let Some(ram_file) = ram_file {
                 let ram_data = load_file(ram_file)?;
-                cartridge.ram.read_from_bytes(ram_data.as_slice())?;
+                cartridge.ram.read_from_bytes(ram_data.as_slice())
+                        .map_err(|e| ioerr::Error {
+                            source: ioerr::Source::RamImage,
+                            source_file: Some(ram_file.to_path_buf()),
+                            error_code: e
+                        })
+                        .map_err(Into::<io::Error>::into)?;
             }
         }
 
@@ -259,7 +281,7 @@ impl Cartridge {
 
 
     /// Loads a cartridge and optionally its RAM from a byte buffer.
-    pub fn load_from_bytes(rom_data: Vec<u8>, ram_data: Option<Vec<u8>>) -> io::Result<Cartridge> {
+    pub fn load_from_bytes(rom_data: Vec<u8>, ram_data: Option<Vec<u8>>) -> ioerr::Result<Cartridge> {
         let rom = RomData {
             data: rom_data,
         };
@@ -336,7 +358,13 @@ impl Cartridge {
         // and we can try to load the RAM image from a file.
         if has_ram && has_battery {
             if let Some(ram_data_vec) = ram_data {
-                ram.read_from_bytes(&ram_data_vec)?;
+                ram.read_from_bytes(&ram_data_vec)
+                        .map_err(|e| ioerr::Error { 
+                            source: ioerr::Source::RamImage,
+                            #[cfg(feature = "file_io")]
+                            source_file: None,
+                            error_code: e 
+                        })?;
             }
         }
 
@@ -359,6 +387,7 @@ impl Cartridge {
         };
 
         let cartridge = Cartridge {
+            #[cfg(feature = "file_io")]
             source_file: None,
 
             title: rom.read_title(),
@@ -407,6 +436,7 @@ impl Cartridge {
 
     /// Get the source file of this cartridge, if any.
     /// If the cartridge was loaded from a file, this is the source file where it was loaded from.
+    #[cfg(feature = "file_io")]
     pub fn get_source_file(&self) -> Option<&PathBuf> {
         self.source_file.as_ref()
     }
@@ -427,6 +457,7 @@ impl Cartridge {
     }
 
     /// Saves the RAM to a file, if the cartridge has battery powered RAM.
+    #[cfg(feature = "file_io")]
     pub fn save_ram_to_file_if_any(&self) -> io::Result<()> {
         if self.has_ram && self.has_battery {
             if let Some(rom_file) = &self.source_file {
@@ -536,6 +567,7 @@ impl Cartridge {
 }
 
 
+#[cfg(feature = "serde")]
 impl TryFrom<CartridgeSerdeHelper> for Cartridge {
     type Error = io::Error;
 
@@ -544,6 +576,7 @@ impl TryFrom<CartridgeSerdeHelper> for Cartridge {
             helper.rom.into(), 
             helper.ram.map(|ram| ram.into())
         )
+                .map_err(Into::<io::Error>::into)
     }
 }
 

@@ -124,7 +124,8 @@ pub fn create_device_with_config(workspace: &Workspace, device_type: &DeviceType
 
     // load the boot ROM if any
     if let Some(boot_rom_path) = &setup.boot_rom_path {
-        let boot_rom = BootRom::load_file(&boot_rom_path)
+        let path = PathBuf::from(workspace.get_path_to_str(boot_rom_path));
+        let boot_rom = BootRom::load_file(&path)
             .map_err(|e| TestCaseError::SetUpError(e.to_string()))
             ?;
 

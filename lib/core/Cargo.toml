@@ -11,8 +11,25 @@ base64 = { version = "0.22.1", default-features = false, features = ["std"], opt
 bincode = { version = "2.0.0-rc.3", default-features = false, features = ["std", "serde"], optional = true }
 
 [features]
-default = []
+default = [
+    "std",
+    "file_io",
+]
+
+# `file_io` adds functions to load and write RAM and ROM images from and into files.
+# This is enabled by default and may be disabled for environments which do not
+# support file access.
+file_io = ["std"]
+
+# A feature to use the standard library. This may be disabled to support
+# platforms with limited capabilities like embedded devices.
+std = []
+
+# Supports creating and loading snapshots of the whole emulator state.
+# This will add some more dependencies like serialisation using serde,
+# data compression and may increase the executable size noticeable.
 snapshots = [
+    "std",
     "serde",
     "serde/serde_derive",
     "flagset/serde",

@@ -16,9 +16,16 @@
  */
 
 use crate::utils::SerializableArray;
-use std::fs::File;
-use std::io;
-use std::io::Read;
+
+
+#[cfg(feature = "file_io")]
+use std::{
+    fs::File,
+    io,
+    io::Read,
+    path::Path,
+};
+
 
 /// A data object containing a 256 byte boot ROM.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -29,30 +36,43 @@ pub struct BootRom {
 
 impl BootRom {
     /// Load a boot rom from a file.
-    pub fn load_file(filepath: &String) -> Result<BootRom, io::Error> {
+    #[cfg(feature = "file_io")]
+    pub fn load_file(filepath: &Path) -> Result<BootRom, io::Error> {
+        use crate::utils::ioerr;
+
         let mut file = File::open(filepath)?;
         let metadata  = file.metadata()?;
         let file_size = metadata.len();
 
         // fail when the boot rom image has an unexpected size
         if file_size != 256 {
-            let msg = format!(
-                "Unexpected Boot ROM size: {} is {} bytes, expected: 256 bytes",
-                *filepath,
-                file_size
-            );
+            let error = ioerr::Error {
+                source: ioerr::Source::BootRomImage,
+                source_file: Some(filepath.to_path_buf()),
+                error_code: ioerr::ErrorCode::InvalidFileSize(ioerr::InvalidFileSizeError {
+                    expected: 256,
+                    actual: file_size as usize,
+                })
+            };
 
-            return Err(io::Error::new(io::ErrorKind::Other, msg));
+            return Err(error.into());
         }
 
         let mut buffer = [0u8; 256];
         file.read_exact(&mut buffer)?;
 
-        Ok(BootRom {
-            rom: Box::new(buffer.into())
-        })
+        Ok(BootRom::new(buffer))
     }
 
+
+    /// Creates a new `BootRom` object from existing data.
+    pub fn new(data: [u8; 256]) -> BootRom {
+        BootRom {
+            rom: Box::new(data.into())
+        }
+    }
+
+    
     /// Get data from the boot ROM.
     pub fn read(&self, address: u16) -> u8 {
         self.rom[address as usize]

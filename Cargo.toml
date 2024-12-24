@@ -8,6 +8,7 @@ members = [
     "lib/utils",
     "tests/gen",
     "tests/shared",
+    "tests/test_nostd",
     "tests/test_suite",
     "tests/update_test_report",
 ]
