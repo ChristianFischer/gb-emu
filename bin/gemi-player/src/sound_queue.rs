@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 by Christian Fischer
+ * Copyright (C) 2022-2024 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,11 +15,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+use gemi_core::apu::audio_output::{AudioOutputSpec, SamplesReceiver};
+use gemi_core::apu::Apu;
+use gemi_core::apu::{audio_output, sample};
 use sdl2::audio::*;
 use sdl2::Sdl;
-use gemi_core::apu::apu::Apu;
-use gemi_core::apu::{audio_output, sample};
-use gemi_core::apu::audio_output::{AudioOutputSpec, SamplesReceiver};
 
 
 const SAMPLE_FREQ    : u32   = 48_000;

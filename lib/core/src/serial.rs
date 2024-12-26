@@ -113,6 +113,7 @@ impl SerialPort {
 
 
     /// Get the data currently in the output queue interpreted as a text string.
+    #[cfg(feature = "std")]
     pub fn get_output_as_text(&self) -> String {
         self.get_output()
             .into_iter()

@@ -15,15 +15,13 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use crate::apu::apu::Apu;
+use crate::apu::Apu;
 use crate::boot_rom::BootRom;
 use crate::cartridge::{Cartridge, GameBoyColorSupport, LicenseeCode};
 use crate::cpu::cpu::{Cpu, CpuFlag, RegisterR8, CPU_CLOCK_SPEED};
 use crate::cpu::interrupts::InterruptRegisters;
 use crate::cpu::opcode::{OpCodeContext, OpCodeResult};
 use crate::debug::{DebugEvent, DebugEvents};
-// re-export some types
-pub use crate::device_type::{DeviceType, EmulationType};
 use crate::input::Input;
 use crate::mmu::memory::Memory;
 use crate::mmu::memory_bus::{MemoryBusConnection, MemoryBusSignals};
@@ -32,6 +30,10 @@ use crate::ppu::ppu::{Ppu, CPU_CYCLES_PER_FRAME};
 use crate::serial::SerialPort;
 use crate::timer::Timer;
 use crate::utils::{carrying_add_u8, get_high};
+
+// re-export some types
+pub use crate::device_type::{DeviceType, EmulationType};
+
 
 /// Type to measure clock ticks of the device.
 /// Alias for unsigned 64bit integer.
@@ -584,6 +586,7 @@ impl GameBoy {
     fn update_components(&mut self, cycles: Clock) -> MemoryBusSignals {
         self.cpu.update(cycles);
         self.get_mmu_mut().update(cycles);
+        #[cfg(feature = "apu")]
         self.get_peripherals_mut().apu.update(cycles);
         self.get_peripherals_mut().ppu.update(cycles);
         self.get_peripherals_mut().timer.update(cycles);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 by Christian Fischer
+ * Copyright (C) 2022-2024 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,10 +15,29 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-pub mod apu;
+
+#[cfg(feature = "apu")]
+mod apu;
+
+#[cfg(feature = "apu")]
 pub mod audio_output;
+#[cfg(feature = "apu")]
 pub mod channels;
+#[cfg(feature = "apu")]
 pub mod dac;
+#[cfg(feature = "apu")]
 pub mod hpf;
+#[cfg(feature = "apu")]
 pub mod mixer;
+#[cfg(feature = "apu")]
 pub mod sample;
+
+#[cfg(feature = "apu")]
+pub use apu::*;
+
+
+#[cfg(not(feature = "apu"))]
+mod dummy_apu;
+
+#[cfg(not(feature = "apu"))]
+pub use dummy_apu::DummyApu as Apu;
