@@ -15,9 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use wasm_bindgen::prelude::wasm_bindgen;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, ImageData};
 
 use gemi_core::apu::audio_output::{AudioOutputSpec, SamplesReceiver};
@@ -112,7 +112,7 @@ impl WasmPlayer {
         ;
 
         // finalize and initialize the emulator
-        let mut gb = builder.finish()?;
+        let mut gb = builder.finish().map_err(|e| e.to_string())?;
         gb.initialize();
 
         Ok(

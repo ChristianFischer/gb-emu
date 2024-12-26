@@ -125,6 +125,7 @@ impl SpriteImage {
     /// Creates a new string containing the hex representation of the sprite data.
     /// This is unique for each combination of sprite data and can be used as a
     /// unique identifier for the sprite.
+    #[cfg(feature = "std")]
     pub fn to_hex_string(&self) -> String {
         format!(
                 "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",

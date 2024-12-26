@@ -15,6 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#[cfg(feature = "std")]
 use std::fmt::{Display, Formatter};
 
 use crate::gameboy::Clock;
@@ -116,6 +117,7 @@ impl Default for Frequency {
 }
 
 
+#[cfg(feature = "std")]
 impl Display for Frequency {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:04x}", self.value)

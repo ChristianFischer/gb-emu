@@ -16,7 +16,7 @@
  */
 
 use crate::utils::SerdeSupport;
-use std::ops::{Deref, DerefMut};
+use core::ops::{Deref, DerefMut};
 
 #[cfg(feature = "serde")]
 use serde::de::Error;
@@ -54,7 +54,7 @@ impl<T: SerdeSupport + Copy + Clone, const SIZE: usize> DerefMut for Serializabl
 
 impl<T: SerdeSupport + Copy + Clone, const SIZE: usize> IntoIterator for SerializableArray<T, SIZE> {
     type Item = T;
-    type IntoIter = std::array::IntoIter<T, SIZE>;
+    type IntoIter = core::array::IntoIter<T, SIZE>;
 
     fn into_iter(self) -> Self::IntoIter {
         IntoIterator::into_iter(self.0)
@@ -64,7 +64,7 @@ impl<T: SerdeSupport + Copy + Clone, const SIZE: usize> IntoIterator for Seriali
 
 impl<'a, T: SerdeSupport + Copy + Clone, const SIZE: usize> IntoIterator for &'a SerializableArray<T, SIZE> {
     type Item = &'a T;
-    type IntoIter = std::slice::Iter<'a, T>;
+    type IntoIter = core::slice::Iter<'a, T>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.0.iter()
@@ -74,7 +74,7 @@ impl<'a, T: SerdeSupport + Copy + Clone, const SIZE: usize> IntoIterator for &'a
 
 impl<'a, T: SerdeSupport + Copy + Clone, const SIZE: usize> IntoIterator for &'a mut SerializableArray<T, SIZE> {
     type Item = &'a mut T;
-    type IntoIter = std::slice::IterMut<'a, T>;
+    type IntoIter = core::slice::IterMut<'a, T>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.0.iter_mut()

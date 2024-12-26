@@ -15,6 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+use alloc::vec::Vec;
+
 #[cfg(feature = "file_io")]
 use std::{
     fs::File,
@@ -88,6 +90,9 @@ pub trait MemoryData {
 
 mod dynamic_size {
     use crate::mmu::memory_data::MemoryData;
+    use alloc::vec;
+    use alloc::vec::Vec;
+
 
     /// A data object storing data of variable size.
     #[derive(Clone)]
@@ -133,6 +138,8 @@ mod dynamic_size {
 pub mod fixed_size {
     use crate::mmu::memory_data::MemoryData;
     use crate::utils::SerializableArray;
+    use alloc::boxed::Box;
+
 
     /// A data object storing data of fixed size.
     #[derive(Clone)]
@@ -177,9 +184,10 @@ pub mod fixed_size {
 
 
 pub mod mapped {
-    use std::borrow::{Borrow, BorrowMut};
-    use std::mem::size_of;
-    use std::ptr::{slice_from_raw_parts, slice_from_raw_parts_mut};
+    use alloc::boxed::Box;
+    use core::borrow::{Borrow, BorrowMut};
+    use core::mem::size_of;
+    use core::ptr::{slice_from_raw_parts, slice_from_raw_parts_mut};
 
     use crate::mmu::memory_data::MemoryData;
 

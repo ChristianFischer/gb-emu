@@ -18,8 +18,10 @@
 #[cfg(feature = "file_io")]
 use std::path::PathBuf;
 
+#[cfg(feature = "std")]
 use std::fmt::{Display, Formatter};
-use std::result;
+
+use core::result;
 
 
 /// Information about an IO error with the error source attached.
@@ -67,6 +69,7 @@ pub struct InvalidFileSizeError {
 pub type Result<T> = result::Result<T, Error>;
 
 
+#[cfg(feature = "std")]
 impl Display for Source {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -78,6 +81,7 @@ impl Display for Source {
 }
 
 
+#[cfg(feature = "std")]
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}: {}", self.source, self.error_code)
@@ -85,6 +89,7 @@ impl Display for Error {
 }
 
 
+#[cfg(feature = "std")]
 impl Display for ErrorCode {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {

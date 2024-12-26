@@ -15,8 +15,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#[cfg(feature = "std")]
 use std::fmt::{Display, Formatter};
-use std::ops::{Index, IndexMut};
+
+use core::ops::{Index, IndexMut};
 
 
 /// The cursor to store the position within the Wave RAM to be read by the wave channel.
@@ -129,6 +131,7 @@ impl IndexMut<u8> for WaveRam {
 }
 
 
+#[cfg(feature = "std")]
 impl Display for WaveRam {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         self.data

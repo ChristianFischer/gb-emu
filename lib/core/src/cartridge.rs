@@ -23,13 +23,19 @@ use std::{
     path::{Path, PathBuf}
 };
 
+#[cfg(feature = "std")]
 use std::fmt::{Display, Formatter};
-use std::ops::Range;
+
+#[cfg(feature = "serde")]
+use crate::utils::SerializableBuffer;
+
+use alloc::vec::Vec;
+use core::ops::Range;
 
 use crate::mmu::mbc::MemoryBankController;
 use crate::mmu::memory_data::{MemoryData, MemoryDataDynamic};
+use crate::utils::as_hex_digit;
 use crate::utils::ioerr;
-use crate::utils::{as_hex_digit, SerializableBuffer};
 
 pub const FILE_EXT_GB:  &str = "gb";
 pub const FILE_EXT_GBC: &str = "gbc";
@@ -48,11 +54,6 @@ pub enum GameBoyColorSupport {
 
     /// CGB is required to run this cartridge
     Required
-}
-
-
-pub enum ErrorCode {
-    
 }
 
 
@@ -88,12 +89,16 @@ pub struct Cartridge {
     #[cfg(feature = "file_io")]
     source_file: Option<PathBuf>,
 
+    #[cfg(feature = "std")]
     title: String,
+
+    #[cfg(feature = "std")]
+    manufacturer_code: String,
+
+    licensee_code: LicenseeCode,
+
     rom: RomData,
     ram: MemoryDataDynamic,
-
-    manufacturer_code: String,
-    licensee_code: LicenseeCode,
 
     mbc: MemoryBankController,
 
@@ -114,7 +119,7 @@ pub struct Cartridge {
 
 
 /// Helper struct to implement serialization via serde by only serializing RAM and ROM.
-#[allow(dead_code)]
+#[cfg(feature = "serde")]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 struct CartridgeSerdeHelper {
     rom: SerializableBuffer<u8>,
@@ -160,6 +165,7 @@ impl RomData {
     }
 
     /// Read the game title from the ROM data.
+    #[cfg(feature = "std")]
     pub fn read_title(self: &RomData) -> String {
         let mut title_length: usize = 0;
 
@@ -179,6 +185,7 @@ impl RomData {
 
 
     /// Read the manufacturer code from the ROM data.
+    #[cfg(feature = "std")]
     pub fn read_manufacturer_code(self: &RomData) -> String {
         if self.data[ROM_OFFSET_MANUFACTURER_CODE - 1] == 0
             && self.data[ROM_OFFSET_MANUFACTURER_CODE] != 0
@@ -359,11 +366,11 @@ impl Cartridge {
         if has_ram && has_battery {
             if let Some(ram_data_vec) = ram_data {
                 ram.read_from_bytes(&ram_data_vec)
-                        .map_err(|e| ioerr::Error { 
+                        .map_err(|e| ioerr::Error {
                             source: ioerr::Source::RamImage,
                             #[cfg(feature = "file_io")]
                             source_file: None,
-                            error_code: e 
+                            error_code: e
                         })?;
             }
         }
@@ -390,9 +397,12 @@ impl Cartridge {
             #[cfg(feature = "file_io")]
             source_file: None,
 
+            #[cfg(feature = "std")]
             title: rom.read_title(),
 
+            #[cfg(feature = "std")]
             manufacturer_code: rom.read_manufacturer_code(),
+
             licensee_code,
 
             mbc,
@@ -477,9 +487,11 @@ impl Cartridge {
 
 
     /// get the game's title
+    #[cfg(feature = "std")]
     pub fn get_title(&self) -> &String {
         &self.title
     }
+
 
     /// Computes the checksum of all 16 title bytes
     pub fn compute_title_checksum(&self) -> u8 {
@@ -493,6 +505,7 @@ impl Cartridge {
     }
 
     /// get the game's manufacturer code
+    #[cfg(feature = "std")]
     pub fn get_manufacturer_code(&self) -> &String {
         &self.manufacturer_code
     }
@@ -581,6 +594,7 @@ impl TryFrom<CartridgeSerdeHelper> for Cartridge {
 }
 
 
+#[cfg(feature = "serde")]
 impl From<Cartridge> for CartridgeSerdeHelper {
     fn from(cart: Cartridge) -> Self {
         Self {
@@ -596,6 +610,7 @@ impl From<Cartridge> for CartridgeSerdeHelper {
 }
 
 
+#[cfg(feature = "std")]
 impl Display for LicenseeCode {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {

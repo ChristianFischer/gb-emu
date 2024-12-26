@@ -15,6 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#[cfg(feature = "std")]
 use std::fmt::{Display, Formatter};
 
 use crate::cpu::opcodes::{OPCODE_TABLE, OPCODE_TABLE_EXTENDED};
@@ -188,6 +189,7 @@ impl From<()> for OpCodeResult {
 
 impl OpCode {
     /// Split the attribute string into tokens.
+    #[cfg(feature = "std")]
     pub fn tokenize(&self) -> Vec<Token> {
         let mut characters = self.name;
         let mut tokens     = Vec::new();
@@ -300,6 +302,7 @@ impl Instruction {
 
 
     /// Get the replacement string for an argument placeholder.
+    #[cfg(feature = "std")]
     pub fn resolve_argument(&self, arg: &str) -> String {
         let arg0 = self.arg[0];
         let arg1 = self.arg[1];
@@ -341,6 +344,7 @@ impl Instruction {
 }
 
 
+#[cfg(feature = "std")]
 impl Display for Instruction {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let mut label = self.opcode.name.to_string();

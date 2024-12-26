@@ -15,6 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#[cfg(feature = "std")]
 use std::fmt::{Debug, Display, Formatter, LowerHex, UpperHex};
 
 use crate::utils::get_bit;
@@ -162,18 +163,21 @@ impl Color {
     }
 }
 
+#[cfg(feature = "std")]
 impl LowerHex for Color {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:08x}", self.to_u32())
     }
 }
 
+#[cfg(feature = "std")]
 impl UpperHex for Color {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:08X}", self.to_u32())
     }
 }
 
+#[cfg(feature = "std")]
 impl Display for Color {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:02x},{:02x},{:02x},{:02x}", self.r, self.g, self.b, self.a)
@@ -249,6 +253,7 @@ impl Default for DmgPalette {
     }
 }
 
+#[cfg(feature = "std")]
 impl Display for DmgPalette {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -489,6 +494,7 @@ impl Sprite {
 }
 
 
+#[cfg(feature = "std")]
 impl Display for Sprite {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(

@@ -15,7 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use std::cmp::min;
+use core::cmp::min;
 
 use crate::gameboy::{Clock, Peripherals};
 use crate::mmu::locations::*;

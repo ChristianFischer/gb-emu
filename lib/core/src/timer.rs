@@ -15,10 +15,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use std::cmp::min;
+#[cfg(feature = "std")]
 use std::fmt::{Display, Formatter};
-use std::mem::take;
-use std::ops::Sub;
+
+use core::cmp::min;
+use core::mem::take;
+use core::ops::Sub;
 
 use crate::cpu::interrupts::Interrupt;
 use crate::gameboy::Clock;
@@ -257,6 +259,7 @@ impl InternalCounter {
 }
 
 
+#[cfg(feature = "std")]
 impl Display for InternalCounter {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:04x}", self.value)

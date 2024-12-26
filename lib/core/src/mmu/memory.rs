@@ -15,7 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use std::cmp::max;
+use alloc::vec::Vec;
+use core::cmp::max;
 
 #[cfg(feature = "file_io")]
 use std::io;
@@ -99,7 +100,7 @@ impl Memory {
         Self {
             device_config,
 
-            wram_banks: std::iter::repeat_with(|| WRamBank::new()).take(num_wram_banks).collect(),
+            wram_banks: core::iter::repeat_with(|| WRamBank::new()).take(num_wram_banks).collect(),
             wram_active_bank_0: 0,
             wram_active_bank_1: 1,
 

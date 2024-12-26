@@ -17,6 +17,8 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+extern crate alloc;
+
 pub mod apu;
 pub mod boot_rom;
 pub mod cartridge;
@@ -31,3 +33,4 @@ pub mod serial;
 pub mod snapshots;
 pub mod timer;
 pub mod utils;
+

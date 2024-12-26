@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 by Christian Fischer
+ * Copyright (C) 2022-2024 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,9 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use wasm_bindgen::prelude::wasm_bindgen;
 use gemi_core::cartridge::Cartridge as NativeCartridge;
 use gemi_core::mmu::memory_data::MemoryData;
+use wasm_bindgen::prelude::wasm_bindgen;
 
 
 /// A wrapper around the internal cartridge type to expose it to the JS side.

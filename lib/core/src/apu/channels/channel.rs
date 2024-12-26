@@ -258,7 +258,7 @@ impl<
     /// value as a result of this operation.
     fn for_each_component<F, T>(&self, func: F) -> T
         where F : Fn(&dyn ChannelComponent) -> T,
-              T : Default + std::ops::BitOr + std::ops::BitOrAssign
+              T : Default + core::ops::BitOr + core::ops::BitOrAssign
     {
         let mut results: T = Default::default();
 

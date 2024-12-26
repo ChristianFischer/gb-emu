@@ -15,6 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#[cfg(feature = "std")]
 use std::fmt::{Display, Formatter};
 
 use crate::cartridge::Cartridge;
@@ -70,11 +71,19 @@ pub fn create_mbc(kind: &MemoryBankController) -> Mbc {
         MemoryBankController::MBC1M => Mbc::MBC1(Mbc1::new_multicart()),
         MemoryBankController::MBC2  => Mbc::MBC2(Mbc2::new()),
         MemoryBankController::MBC5  => Mbc::MBC5(Mbc5::new()),
-        _                           => panic!("Not implemented {}", kind)
+
+        _ => {
+            #[cfg(feature = "std")]
+            unimplemented!("Not implemented: {}", kind);
+
+            #[cfg(not(feature = "std"))]
+            unimplemented!("Not implemented")
+        }
     }
 }
 
 
+#[cfg(feature = "std")]
 impl Display for MemoryBankController {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let name = match *self {

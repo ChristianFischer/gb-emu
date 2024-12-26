@@ -273,7 +273,7 @@ impl EmulatorState {
         builder.set_cartridge(cartridge);
 
         // finish & initialize
-        let mut gb = builder.finish()?;
+        let mut gb = builder.finish().map_err(|e| e.to_string())?;
         gb.initialize();
 
         // reset key states after emulator loading

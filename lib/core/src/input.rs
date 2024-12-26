@@ -15,7 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use std::mem::take;
+use core::mem::take;
 
 use crate::cpu::interrupts::Interrupt;
 use crate::mmu::locations::MEMORY_LOCATION_JOYP;

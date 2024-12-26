@@ -15,7 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use std::ops;
+use core::ops;
 
 /// The data type to be used to store audio sample data.
 pub type SampleType = f32;

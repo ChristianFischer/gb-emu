@@ -15,6 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+use alloc::vec::Vec;
 
 use crate::gameboy::{DeviceConfig, EmulationType};
 use crate::mmu::memory_data::mapped::MemoryDataMapped;
@@ -132,7 +133,7 @@ impl VideoMemory {
         };
 
         Self {
-            vram_banks: std::iter::repeat_with(|| VRamBank::new()).take(num_vram_banks).collect(),
+            vram_banks: core::iter::repeat_with(|| VRamBank::new()).take(num_vram_banks).collect(),
             vram_active_bank: 0,
 
             oam: OamRamBank::new([Sprite::empty(); 40]),

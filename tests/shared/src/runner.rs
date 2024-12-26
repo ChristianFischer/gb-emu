@@ -134,7 +134,7 @@ pub fn create_device_with_config(workspace: &Workspace, device_type: &DeviceType
 
     // create the device emulator
     let mut gb = builder.finish()
-        .map_err(|e| TestCaseError::SetUpError(e))
+        .map_err(|e| TestCaseError::SetUpError(e.to_string()))
         ?;
 
     // initialize

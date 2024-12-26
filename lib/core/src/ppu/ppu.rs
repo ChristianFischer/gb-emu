@@ -15,8 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use std::cmp::min;
-use std::mem::take;
+use core::cmp::min;
+use core::mem::take;
 
 use crate::cpu::interrupts::Interrupt;
 use crate::debug::DebugEvent;
@@ -31,6 +31,7 @@ use crate::ppu::graphic_data::*;
 use crate::ppu::sprite_image::SpriteImage;
 use crate::ppu::video_memory::{OamRam, OamRamBank, Palettes, VideoMemory};
 use crate::utils::{get_bit, SerializableArray};
+
 
 pub const SCREEN_W: u32 = 160;
 pub const SCREEN_H: u32 = 144;

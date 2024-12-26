@@ -15,6 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#[cfg(feature = "std")]
 use std::fmt::{Display, Formatter};
 
 use crate::cpu::opcode::{Instruction, OpCode};
@@ -144,6 +145,8 @@ impl RegisterR16 {
     }
 }
 
+
+#[cfg(feature = "std")]
 impl Display for RegisterR8 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {
@@ -159,6 +162,8 @@ impl Display for RegisterR8 {
     }
 }
 
+
+#[cfg(feature = "std")]
 impl Display for RegisterR16 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {
@@ -169,6 +174,7 @@ impl Display for RegisterR16 {
         })
     }
 }
+
 
 impl CpuFlag {
     /// Get the bit inside the flags register which stores
@@ -557,6 +563,7 @@ impl Cpu {
     }
 
     /// Creates a string representation of the current CPU flags.
+    #[cfg(feature = "std")]
     pub fn flags_to_string(&self) -> String {
         format!(
             "{}{}{}{}",
@@ -568,6 +575,7 @@ impl Cpu {
     }
 
     /// Creates a string representation of the current CPU registers.
+    #[cfg(feature = "std")]
     pub fn registers_to_string(&self) -> String {
         format!(
             "A={:02x} F={:02x} B={:02x} C={:02x} D={:02x} E={:02x} H={:02x} L={:02x} SP={:04x} IP={:04x}",
@@ -586,6 +594,7 @@ impl Cpu {
 }
 
 
+#[cfg(feature = "std")]
 impl Display for Cpu {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(

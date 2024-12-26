@@ -15,7 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use std::mem::take;
+use alloc::vec;
+use alloc::vec::Vec;
+use core::mem::take;
 
 use crate::cpu::interrupts::Interrupt;
 use crate::gameboy::Clock;
@@ -131,6 +133,7 @@ impl SerialPort {
 
     /// Takes the data currently in the output queue interpreted as a text string.
     /// The data will then be removed from the current output queue.
+    #[cfg(feature = "std")]
     pub fn take_output_as_text(&mut self) -> String {
         self.take_output()
             .into_iter()

@@ -179,7 +179,7 @@ fn make_gameboy_instance() -> Result<GameBoy, String> {
         }
     }
 
-    builder.finish()
+    builder.finish().map_err(|e| e.to_string())
 }
 
 

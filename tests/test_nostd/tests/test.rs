@@ -22,5 +22,7 @@ use gemi_core::gameboy::{Builder, DeviceType};
 fn test_nostd() {
     let mut builder = Builder::new();
     builder.set_device_type(DeviceType::GameBoyDmg);
-    _ = builder.finish().unwrap();
+    let mut gb = builder.finish().unwrap();
+
+    gb.run_frame();
 }

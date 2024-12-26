@@ -6,6 +6,4 @@ edition = "2021"
 [dependencies.gemi-core]
 path = "../../lib/core"
 default-features = false
-features = [
-    "std"
-]
+features = []

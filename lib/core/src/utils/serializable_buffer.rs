@@ -15,8 +15,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+use alloc::vec::Vec;
+use core::ops::{Deref, DerefMut};
+
 use crate::utils::SerdeSupport;
-use std::ops::{Deref, DerefMut};
 
 
 /// A struct to be used as a replacement for a `Vec`, which
@@ -61,7 +63,7 @@ impl<T: SerdeSupport + Clone> DerefMut for SerializableBuffer<T> {
 
 impl<'a, T: SerdeSupport + Clone> IntoIterator for &'a SerializableBuffer<T> {
     type Item = &'a T;
-    type IntoIter = std::slice::Iter<'a, T>;
+    type IntoIter = core::slice::Iter<'a, T>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.0.iter()
@@ -71,7 +73,7 @@ impl<'a, T: SerdeSupport + Clone> IntoIterator for &'a SerializableBuffer<T> {
 
 impl<'a, T: SerdeSupport + Clone> IntoIterator for &'a mut SerializableBuffer<T> {
     type Item = &'a mut T;
-    type IntoIter = std::slice::IterMut<'a, T>;
+    type IntoIter = core::slice::IterMut<'a, T>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.0.iter_mut()

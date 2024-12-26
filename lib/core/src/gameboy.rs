@@ -31,6 +31,11 @@ use crate::serial::SerialPort;
 use crate::timer::Timer;
 use crate::utils::{carrying_add_u8, get_high};
 
+use alloc::boxed::Box;
+
+#[cfg(feature = "std")]
+use std::fmt::{Display, Formatter};
+
 // re-export some types
 pub use crate::device_type::{DeviceType, EmulationType};
 
@@ -62,6 +67,12 @@ pub struct Builder {
     cartridge:     Option<Cartridge>,
     device_type:   Option<DeviceType>,
     print_opcodes: bool,
+}
+
+
+/// Error codes occurred during creating an emulator instance.
+#[derive(Debug)]
+pub enum BuilderErrorCode {
 }
 
 
@@ -184,7 +195,7 @@ impl Builder {
     }
 
     /// Build the GameBoy device emulator based on the properties specified with this builder.
-    pub fn finish(mut self) -> Result<GameBoy, String> {
+    pub fn finish(mut self) -> Result<GameBoy, BuilderErrorCode> {
         // select the preferred device type based on the current config and cartridge
         let device_type    = self.select_preferred_device_type();
         let emulation_type = self.select_emulation_type(&device_type);
@@ -221,7 +232,7 @@ impl GameBoy {
     }
 
     /// Create a new GameBoy device.
-    pub fn new(device_config: DeviceConfig) -> Result<GameBoy,String> {
+    pub fn new(device_config: DeviceConfig) -> Result<GameBoy, BuilderErrorCode> {
         Ok(
             GameBoy {
                 device_config,
@@ -563,6 +574,7 @@ impl GameBoy {
         }
 
         // print opcode and CPU state if enabled
+        #[cfg(feature = "std")]
         if self.device_config.print_opcodes {
             println!(
                 "/* {:04x} [{:02x}]{} */ {:<16}    ; {}",
@@ -613,7 +625,15 @@ impl GameBoy {
 }
 
 
-impl std::ops::Add for EmulatorUpdateResults {
+#[cfg(feature = "std")]
+impl Display for BuilderErrorCode {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        write!(f, "failed to build emulator")
+    }
+}
+
+
+impl core::ops::Add for EmulatorUpdateResults {
     type Output = EmulatorUpdateResults;
 
     fn add(self, rhs: Self) -> Self::Output {
@@ -625,7 +645,7 @@ impl std::ops::Add for EmulatorUpdateResults {
 }
 
 
-impl std::ops::AddAssign for EmulatorUpdateResults {
+impl core::ops::AddAssign for EmulatorUpdateResults {
     fn add_assign(&mut self, rhs: Self) {
         self.cycles += rhs.cycles;
         self.events |= rhs.events;
