@@ -29,11 +29,10 @@ use std::fmt::{Display, Formatter};
 #[cfg(feature = "serde")]
 use crate::utils::SerializableBuffer;
 
-use alloc::vec::Vec;
 use core::ops::Range;
 
 use crate::mmu::mbc::MemoryBankController;
-use crate::mmu::memory_data::{MemoryData, MemoryDataDynamic};
+use crate::mmu::memory_data::MemoryData;
 use crate::utils::as_hex_digit;
 use crate::utils::ioerr;
 
@@ -71,10 +70,40 @@ pub enum LicenseeCode {
 }
 
 
+#[cfg(feature = "dyn_alloc")]
+pub mod input {
+    use crate::mmu::memory_data::MemoryDataDynamic;
+
+    /// Alias type for storing the ROM data.
+    /// With heap memory support, ROM data is stored in a dynamic list,
+    /// and supports large ROM files.
+    pub type RomDataStorageType = MemoryDataDynamic;
+
+    /// Alias Type for storing the RAM data.
+    /// With heap memory support, the RAM is stored in a dynamic list
+    /// to support any size of RAM.
+    pub type RamDataStorageType = MemoryDataDynamic;
+}
+
+
+#[cfg(not(feature = "dyn_alloc"))]
+pub mod input {
+    use crate::mmu::memory_data::MemoryDataFixedSize;
+
+    /// Alias type for storing the ROM data.
+    /// Without heap memory, only 32k ROM files are supported.
+    pub type RomDataStorageType = MemoryDataFixedSize<32_768>;
+
+    /// Alias type for storing the RAM data.
+    /// Without heap memory, cartridge RAM is currently not supported.
+    pub type RamDataStorageType = MemoryDataFixedSize<0>;
+}
+
+
 /// This object holds the plain data of a ROM.
 #[derive(Clone)]
 pub struct RomData {
-    data: Vec<u8>,
+    data: input::RomDataStorageType
 }
 
 
@@ -98,7 +127,7 @@ pub struct Cartridge {
     licensee_code: LicenseeCode,
 
     rom: RomData,
-    ram: MemoryDataDynamic,
+    ram: input::RamDataStorageType,
 
     mbc: MemoryBankController,
 
@@ -143,21 +172,22 @@ pub const ROM_OFFSET_OLD_LICENSEE_CODE:     usize = 0x014B;
 
 
 impl RomData {
-    /// Get the ROM data.
-    pub fn get_data(&self) -> &Vec<u8> {
-        &self.data
-    }
-
     /// Get the ROM data on a particular address.
     pub fn get_at(&self, address: usize) -> u8 {
         self.data[address]
     }
 
+    /// Get the ROM data.
+    pub fn as_slice(&self) -> &[u8] {
+        &self.data.as_slice()
+    }
+
     /// Get a data slice out of the ROM data.
     /// If the data is not large enough, it will return 'None'
     pub fn get_slice(&self, range: Range<usize>) -> Option<&[u8]> {
-        if self.data.len() >= range.end {
-            Some(&self.data[range])
+        if self.data.size() >= range.end {
+            let data = self.data.as_slice();
+            Some(&data[range])
         }
         else {
             None
@@ -167,15 +197,16 @@ impl RomData {
     /// Read the game title from the ROM data.
     #[cfg(feature = "std")]
     pub fn read_title(self: &RomData) -> String {
+        let data = self.data.as_slice();
         let mut title_length: usize = 0;
 
-        while title_length < 15 && self.data[ROM_OFFSET_TITLE_STRING + title_length] != 0 {
+        while title_length < 15 && data[ROM_OFFSET_TITLE_STRING + title_length] != 0 {
             title_length += 1;
         }
 
         let title_start = ROM_OFFSET_TITLE_STRING;
         let title_end   = ROM_OFFSET_TITLE_STRING + title_length;
-        let title_chars  = &self.data[title_start..title_end];
+        let title_chars  = &data[title_start..title_end];
 
         match std::str::from_utf8(title_chars) {
             Ok(v) => v.trim().to_string(),
@@ -187,10 +218,12 @@ impl RomData {
     /// Read the manufacturer code from the ROM data.
     #[cfg(feature = "std")]
     pub fn read_manufacturer_code(self: &RomData) -> String {
-        if self.data[ROM_OFFSET_MANUFACTURER_CODE - 1] == 0
-            && self.data[ROM_OFFSET_MANUFACTURER_CODE] != 0
+        let data = self.data.as_slice();
+
+        if data[ROM_OFFSET_MANUFACTURER_CODE - 1] == 0
+            && data[ROM_OFFSET_MANUFACTURER_CODE] != 0
         {
-            let mfc = &self.data[ROM_OFFSET_MANUFACTURER_CODE..ROM_OFFSET_MANUFACTURER_CODE + 4];
+            let mfc = &data[ROM_OFFSET_MANUFACTURER_CODE..ROM_OFFSET_MANUFACTURER_CODE + 4];
 
             return match std::str::from_utf8(mfc) {
                 Ok(v) => v.to_string(),
@@ -229,6 +262,10 @@ fn load_file(file_path: &Path) -> io::Result<Vec<u8>> {
 
 
 impl Cartridge {
+    /// Default value to be used in [load_from_bytes] to tell the function
+    /// not to load a RAM image.
+    pub const NO_RAM: Option<[u8; 0]> = None;
+
     /// Load a cartridge from a ROM file.
     /// If a RAM file with the same name exists, it tries to load it as well.
     /// Failing to load the RAM file will cause an error, but if no RAM file
@@ -263,7 +300,18 @@ impl Cartridge {
     pub fn load_files(rom_file: &Path, ram_file: Option<&Path>) -> io::Result<Cartridge> {
         // load the cartridge from the ROM file
         let rom_data      = load_file(rom_file)?;
-        let mut cartridge = Self::load_from_bytes(rom_data, None)
+
+        #[cfg(not(feature = "dyn_alloc"))]
+        let rom_data: input::RomDataStorageType = rom_data.as_slice().try_into().map_err(|e| ioerr::Error {
+            error_code: ioerr::ErrorCode::InvalidFileSize(ioerr::InvalidFileSizeError {
+                actual: rom_data.len(),
+                expected: size_of::<input::RomDataStorageType>(),
+            }),
+            source: ioerr::Source::RomImage,
+            source_file: Some(rom_file.to_path_buf())
+        })?;
+
+        let mut cartridge = Self::load_from_bytes(rom_data, Self::NO_RAM)
                 .map_err(Into::<io::Error>::into)?;
 
         // when the cartridge has battery powered RAM support, load the RAM file
@@ -288,7 +336,22 @@ impl Cartridge {
 
 
     /// Loads a cartridge and optionally its RAM from a byte buffer.
-    pub fn load_from_bytes(rom_data: Vec<u8>, ram_data: Option<Vec<u8>>) -> ioerr::Result<Cartridge> {
+    pub fn load_from_bytes(
+            rom_data: impl TryInto<input::RomDataStorageType, Error=ioerr::ErrorCode>,
+            ram_data: Option<impl TryInto<input::RamDataStorageType, Error=ioerr::ErrorCode>>
+    ) -> ioerr::Result<Cartridge> {
+        // Convert `rom_data` into the actual expected type.
+        // This is required to provide the same API for each configuration,
+        // while the actual supporting data type may be different.
+        // For example on embedded devices, only small ROM size is supported.
+        let rom_data: input::RomDataStorageType = rom_data.try_into()
+                .map_err(|e| ioerr::Error {
+                    error_code: e,
+                    source: ioerr::Source::RomImage,
+                    #[cfg(feature = "file_io")]
+                    source_file: None,
+                })?;
+
         let rom = RomData {
             data: rom_data,
         };
@@ -358,22 +421,45 @@ impl Cartridge {
             _ => false,
         };
 
+        #[cfg(feature = "dyn_alloc")]
         // allocate RAM banks for this cartridge
-        let mut ram = MemoryDataDynamic::alloc(ram_size);
-
-        // if RAM is available and powered by a battery, it's persistent
-        // and we can try to load the RAM image from a file.
-        if has_ram && has_battery {
-            if let Some(ram_data_vec) = ram_data {
-                ram.read_from_bytes(&ram_data_vec)
+        let ram = {
+            // if RAM is available and powered by a battery, it's persistent
+            // and we can try to load the RAM image from a file.
+            if has_ram && has_battery && ram_data.is_some() {
+                let ram: input::RamDataStorageType = ram_data.unwrap().try_into()
                         .map_err(|e| ioerr::Error {
+                            error_code: e,
                             source: ioerr::Source::RamImage,
                             #[cfg(feature = "file_io")]
                             source_file: None,
-                            error_code: e
-                        })?;
+                        })?
+                ;
+
+                ram
             }
-        }
+            else {
+                // if no battery-powered RAM or no RAM image given,
+                // allocate an empty RAM buffer
+                input::RamDataStorageType::alloc(ram_size)
+            }
+        };
+
+        #[cfg(not(feature = "dyn_alloc"))]
+        let ram = {
+            if has_ram {
+                return Err(ioerr::Error {
+                    source: ioerr::Source::RamImage,
+                    error_code: ioerr::ErrorCode::NotSupported,
+                    #[cfg(feature = "file_io")]
+                    source_file: None,
+                });
+            }
+
+            _ = ram_data;
+
+            input::RamDataStorageType::new()
+        };
 
         let licensee_code_old = rom.data[ROM_OFFSET_OLD_LICENSEE_CODE];
 
@@ -457,12 +543,12 @@ impl Cartridge {
     }
 
     /// Get the RAM banks of this cartridge.
-    pub fn get_ram(&self) -> &MemoryDataDynamic {
+    pub fn get_ram(&self) -> &impl MemoryData {
         &self.ram
     }
 
     /// Get the mutable RAM banks of this cartridge.
-    pub fn get_ram_mut(&mut self) -> &mut MemoryDataDynamic {
+    pub fn get_ram_mut(&mut self) -> &mut impl MemoryData {
         &mut self.ram
     }
 
@@ -586,8 +672,8 @@ impl TryFrom<CartridgeSerdeHelper> for Cartridge {
 
     fn try_from(helper: CartridgeSerdeHelper) -> Result<Self, Self::Error> {
         Cartridge::load_from_bytes(
-            helper.rom.into(), 
-            helper.ram.map(|ram| ram.into())
+            helper.rom.to_vec(),
+            helper.ram.map(|ram| ram.to_vec())
         )
                 .map_err(Into::<io::Error>::into)
     }
@@ -598,7 +684,7 @@ impl TryFrom<CartridgeSerdeHelper> for Cartridge {
 impl From<Cartridge> for CartridgeSerdeHelper {
     fn from(cart: Cartridge) -> Self {
         Self {
-            rom: cart.rom.data.clone().into(),
+            rom: cart.rom.data.to_vec().into(),
             ram: if cart.has_ram {
                 Some(cart.ram.to_vec().into())
             }

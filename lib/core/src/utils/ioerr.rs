@@ -26,15 +26,15 @@ use core::result;
 
 /// Information about an IO error with the error source attached.
 pub struct Error {
+    /// An error code which describes the actual error.
+    pub error_code: ErrorCode,
+
     /// The source type of where the error is related to.
     pub source: Source,
 
     /// Optionally: a file which caused the error.
     #[cfg(feature = "file_io")]
     pub source_file: Option<PathBuf>,
-    
-    /// An error code which describes the actual error.
-    pub error_code: ErrorCode,
 }
 
 
@@ -48,10 +48,16 @@ pub enum Source {
 
 /// An error code describing an actual error.
 pub enum ErrorCode {
+    /// An unknown error occurred on loading data.
+    UnknownError,
+
     /// A file to be loaded had an unexpected size.
     /// This may be the case, for example, when loading a RAM image,
     /// which has a different size than the actual RAM.
     InvalidFileSize(InvalidFileSizeError),
+
+    /// Not supported to use a specific feature here.
+    NotSupported,
 }
 
 
@@ -59,7 +65,7 @@ pub enum ErrorCode {
 pub struct InvalidFileSizeError {
     /// The actual size of the file being loaded.
     pub actual: usize,
-    
+
     /// The expected size of the file.
     pub expected: usize,
 }
@@ -93,8 +99,16 @@ impl Display for Error {
 impl Display for ErrorCode {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
+            ErrorCode::UnknownError => {
+                write!(f, "Unknown error")
+            }
+
             ErrorCode::InvalidFileSize(err) => {
                 write!(f, "Invalid file size: {} (expected: {})", err.actual, err.expected)
+            }
+
+            ErrorCode::NotSupported => {
+                write!(f, "Not supported")
             }
         }
     }
@@ -105,7 +119,7 @@ impl Display for ErrorCode {
 impl From<Error> for std::io::Error {
     fn from(e: Error) -> Self {
         match &e.error_code {
-            ErrorCode::InvalidFileSize(_) => {
+            _ => {
                 std::io::Error::new(
                     std::io::ErrorKind::InvalidData,
                     e.to_string()

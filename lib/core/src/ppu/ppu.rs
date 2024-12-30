@@ -927,7 +927,7 @@ impl Ppu {
         //  - 0 means OAM position has priority
         //  - 1 means X position has priority
         if !self.device_config.is_gbc_enabled() || self.registers.object_priority {
-            scanline.sprites[0 .. scanline.sprites_found as usize].sort_by(
+            scanline.sprites[0 .. scanline.sprites_found as usize].sort_unstable_by(
                 |a, b| {
                     let ax = a.pos_x;
                     let bx = b.pos_x;
@@ -1028,6 +1028,7 @@ impl Ppu {
     }
 
     /// Read the pixel value from a tile using previously created TileFetchProperties.
+    #[allow(unused_mut)] // silence warning since 'mut' is only required for the cgb-block
     pub fn read_tile_pixel(&self, tile: &TileFetchProperties) -> PixelFetchResult {
         let tile_address = (tile.tilemap.base_address() + tile.tile_index - MEMORY_LOCATION_VRAM_BEGIN) as usize;
         let vram0        = &self.memory.vram_banks[0];
@@ -1039,6 +1040,7 @@ impl Ppu {
         let mut palette_gbc         = 0;
         let mut background_priority = false;
 
+        #[cfg(feature = "cgb")]
         if self.device_config.is_gbc_enabled() {
             // read tile attributes from the same location in VRAM1
             let vram1 = &self.memory.vram_banks[1];
@@ -1307,6 +1309,7 @@ fn flipped_if(value: u8, max_value: u8, flip: bool) -> u8 {
 
 
 /// Flips a value if a sprite is mirrored.
+#[cfg(feature = "cgb")]
 fn flip_if(value: &mut u8, max_value: u8, flip: bool) {
     if flip {
         *value = max_value - *value - 1;

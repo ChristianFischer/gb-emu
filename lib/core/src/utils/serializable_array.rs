@@ -37,6 +37,13 @@ impl<T: SerdeSupport + Copy + Clone, const SIZE: usize> From<[T; SIZE]> for Seri
 }
 
 
+impl<T: SerdeSupport + Copy + Clone, const SIZE: usize> Into<[T; SIZE]> for SerializableArray<T, SIZE> {
+    fn into(self) -> [T; SIZE] {
+        self.0
+    }
+}
+
+
 impl<T: SerdeSupport + Copy + Clone, const SIZE: usize> Deref for SerializableArray<T, SIZE> {
     type Target = [T; SIZE];
 

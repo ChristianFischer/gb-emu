@@ -17,7 +17,9 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+#[cfg(feature = "dyn_alloc")]
 extern crate alloc;
+extern crate core;
 
 pub mod apu;
 pub mod boot_rom;

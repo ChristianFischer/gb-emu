@@ -184,50 +184,50 @@ impl MemoryBusConnection for MmuInternal {
 impl_memory_mapper!(
     MemoryMapper(root: MmuInternal) for MmuInternal {
         // Cartridge ROM
-        0x0000 ..= 0x7fff => *root.peripherals.mem,
+        0x0000 ..= 0x7fff => root.peripherals.mem,
 
         // Video RAM
-        0x8000 ..= 0x9fff => *root.peripherals.ppu,
+        0x8000 ..= 0x9fff => root.peripherals.ppu,
 
         // External RAM
-        0xa000 ..= 0xbfff => *root.peripherals.mem,
+        0xa000 ..= 0xbfff => root.peripherals.mem,
 
         // WRAM, Mirror RAM
-        0xc000 ..= 0xfdff => *root.peripherals.mem,
+        0xc000 ..= 0xfdff => root.peripherals.mem,
 
         // OAM
-        0xfe00 ..= 0xfe9f => *root.peripherals.ppu,
+        0xfe00 ..= 0xfe9f => root.peripherals.ppu,
 
         // Restricted RAM area
-        0xfea0 ..= 0xfeff => *root.peripherals.mem,
+        0xfea0 ..= 0xfeff => root.peripherals.mem,
 
         // input registers
-        0xff00 ..= 0xff00 => *root.peripherals.input,
+        0xff00 ..= 0xff00 => root.peripherals.input,
 
         // serial data transfer registers
-        0xff01 ..= 0xff02 => *root.peripherals.serial,
+        0xff01 ..= 0xff02 => root.peripherals.serial,
 
         // timer registers
-        0xff04 ..= 0xff07 => *root.peripherals.timer,
+        0xff04 ..= 0xff07 => root.peripherals.timer,
 
         // APU registers
-        0xff10 ..= 0xff3f => *root.peripherals.apu,
+        0xff10 ..= 0xff3f => root.peripherals.apu,
 
         // PPU registers
-        0xff40 ..= 0xff45 => *root.peripherals.ppu,
-        0xff47 ..= 0xff4f => *root.peripherals.ppu,
-        0xff68 ..= 0xff6b => *root.peripherals.ppu,
+        0xff40 ..= 0xff45 => root.peripherals.ppu,
+        0xff47 ..= 0xff4f => root.peripherals.ppu,
+        0xff68 ..= 0xff6b => root.peripherals.ppu,
 
         MEMORY_LOCATION_DMA_ADDRESS => *root,
 
-        MEMORY_LOCATION_INTERRUPTS_FLAGGED => *root.peripherals.interrupts,
-        MEMORY_LOCATION_INTERRUPTS_ENABLED => *root.peripherals.interrupts,
+        MEMORY_LOCATION_INTERRUPTS_FLAGGED => root.peripherals.interrupts,
+        MEMORY_LOCATION_INTERRUPTS_ENABLED => root.peripherals.interrupts,
 
         // IO Registers
-        0xff00 ..= 0xff7f => *root.peripherals.mem,
+        0xff00 ..= 0xff7f => root.peripherals.mem,
 
         // HRAM
-        0xff80 ..= 0xfffe => *root.peripherals.mem
+        0xff80 ..= 0xfffe => root.peripherals.mem
     }
 );
 

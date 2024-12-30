@@ -31,8 +31,6 @@ use crate::serial::SerialPort;
 use crate::timer::Timer;
 use crate::utils::{carrying_add_u8, get_high};
 
-use alloc::boxed::Box;
-
 #[cfg(feature = "std")]
 use std::fmt::{Display, Formatter};
 
@@ -73,6 +71,7 @@ pub struct Builder {
 /// Error codes occurred during creating an emulator instance.
 #[derive(Debug)]
 pub enum BuilderErrorCode {
+    GameBoyColorNotSupported,
 }
 
 
@@ -90,13 +89,13 @@ pub struct GameBoy {
 /// A set of components connected together via memory bus.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Peripherals {
-    pub apu:        Box<Apu>,
-    pub ppu:        Box<Ppu>,
-    pub mem:        Box<Memory>,
-    pub timer:      Box<Timer>,
-    pub input:      Box<Input>,
-    pub serial:     Box<SerialPort>,
-    pub interrupts: Box<InterruptRegisters>,
+    pub apu:        Apu,
+    pub ppu:        Ppu,
+    pub mem:        Memory,
+    pub timer:      Timer,
+    pub input:      Input,
+    pub serial:     SerialPort,
+    pub interrupts: InterruptRegisters,
 }
 
 
@@ -200,6 +199,12 @@ impl Builder {
         let device_type    = self.select_preferred_device_type();
         let emulation_type = self.select_emulation_type(&device_type);
 
+        // Fail when GBC is required, but not supported
+        #[cfg(not(feature = "cgb"))]
+        if emulation_type == EmulationType::GBC {
+            return Err(BuilderErrorCode::GameBoyColorNotSupported);
+        }
+
         // setup device config based on the current configuration
         let device_config = DeviceConfig {
             device: device_type,
@@ -240,13 +245,13 @@ impl GameBoy {
                 cpu: Cpu::new(
                     Mmu::new(
                         Peripherals {
-                            apu:        Box::new(Apu::new(device_config)),
-                            ppu:        Box::new(Ppu::new(device_config)),
-                            mem:        Box::new(Memory::new(device_config)),
-                            timer:      Box::new(Timer::new()),
-                            input:      Box::new(Input::new()),
-                            serial:     Box::new(SerialPort::new()),
-                            interrupts: Box::new(InterruptRegisters::new()),
+                            apu:        Apu::new(device_config),
+                            ppu:        Ppu::new(device_config),
+                            mem:        Memory::new(device_config),
+                            timer:      Timer::new(),
+                            input:      Input::new(),
+                            serial:     SerialPort::new(),
+                            interrupts: InterruptRegisters::new(),
                         }
                     )
                 ),

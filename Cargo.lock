@@ -3134,19 +3134,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "test_nostd"
+version = "0.1.0"
+dependencies = [
+ "gemi-core",
+]
+
+[[package]]
 name = "testrunner"
 version = "0.1.0"
 dependencies = [
  "gemi-core",
  "tests-generator",
  "tests-shared",
-]
-
-[[package]]
-name = "testrunner_nostd"
-version = "0.1.0"
-dependencies = [
- "gemi-core",
 ]
 
 [[package]]

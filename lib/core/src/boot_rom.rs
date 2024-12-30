@@ -15,8 +15,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use alloc::boxed::Box;
-
 use crate::utils::SerializableArray;
 
 
@@ -32,7 +30,7 @@ use std::{
 /// A data object containing a 256 byte boot ROM.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct BootRom {
-    rom: Box<SerializableArray<u8, 256>>,
+    rom: SerializableArray<u8, 256>,
 }
 
 
@@ -70,7 +68,7 @@ impl BootRom {
     /// Creates a new `BootRom` object from existing data.
     pub fn new(data: [u8; 256]) -> BootRom {
         BootRom {
-            rom: Box::new(data.into())
+            rom: data.into()
         }
     }
 

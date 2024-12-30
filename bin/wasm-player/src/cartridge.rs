@@ -32,7 +32,7 @@ impl Cartridge {
     /// Load a cartridge from a byte array.
     #[wasm_bindgen]
     pub fn load_from_bytes(bytes: Vec<u8>) -> Result<Cartridge, String> {
-        let cartridge = NativeCartridge::load_from_bytes(bytes, None)
+        let cartridge = NativeCartridge::load_from_bytes(bytes, NativeCartridge::NO_RAM)
             .map_err(|e| format!("Failed to load cartridge: {}", e))
             ?;
 

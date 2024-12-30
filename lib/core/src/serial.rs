@@ -15,8 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use alloc::vec;
-use alloc::vec::Vec;
+#[cfg(feature = "dyn_alloc")]
+use alloc::{vec, vec::Vec};
+
 use core::mem::take;
 
 use crate::cpu::interrupts::Interrupt;
@@ -51,6 +52,7 @@ pub struct SerialPort {
     transfer_byte: u8,
 
     /// A queue of all bytes sent by the device.
+    #[cfg(feature = "dyn_alloc")]
     output_queue: Vec<u8>,
 
     /// A flag to enable or disable the output queue.
@@ -66,6 +68,7 @@ impl SerialPort {
             signals:                MemoryBusSignals::default(),
             transfer_enabled:       false,
             transfer_byte:          0x00,
+            #[cfg(feature = "dyn_alloc")]
             output_queue:           vec![],
             output_queue_enabled:   false,
         }
@@ -79,6 +82,7 @@ impl SerialPort {
         if self.clock >= UPDATE_TIME_SERIAL_TRANSFER {
             if self.transfer_enabled {
                 // store the data only if the output queue is enabled
+                #[cfg(feature = "dyn_alloc")]
                 if self.output_queue_enabled {
                     self.output_queue.push(self.transfer_byte);
                 }
@@ -89,7 +93,6 @@ impl SerialPort {
                 // ..  and raise serial transfer interrupt
                 self.request_interrupt(Interrupt::Serial);
             }
-
 
             self.clock -= UPDATE_TIME_SERIAL_TRANSFER;
         }
@@ -109,6 +112,7 @@ impl SerialPort {
 
 
     /// Get the data currently in the output queue.
+    #[cfg(feature = "dyn_alloc")]
     pub fn get_output(&self) -> Vec<u8> {
         self.output_queue.clone()
     }
@@ -116,6 +120,7 @@ impl SerialPort {
 
     /// Get the data currently in the output queue interpreted as a text string.
     #[cfg(feature = "std")]
+    #[cfg(feature = "dyn_alloc")]
     pub fn get_output_as_text(&self) -> String {
         self.get_output()
             .into_iter()
@@ -126,6 +131,7 @@ impl SerialPort {
 
     /// Takes the data currently in the output queue.
     /// The data will then be removed from the current output queue.
+    #[cfg(feature = "dyn_alloc")]
     pub fn take_output(&mut self) -> Vec<u8> {
         take(&mut self.output_queue)
     }
@@ -134,6 +140,7 @@ impl SerialPort {
     /// Takes the data currently in the output queue interpreted as a text string.
     /// The data will then be removed from the current output queue.
     #[cfg(feature = "std")]
+    #[cfg(feature = "dyn_alloc")]
     pub fn take_output_as_text(&mut self) -> String {
         self.take_output()
             .into_iter()
@@ -143,6 +150,7 @@ impl SerialPort {
 
 
     /// Takes the next byte from the output queue.
+    #[cfg(feature = "dyn_alloc")]
     pub fn take_next(&mut self) -> Option<u8> {
         if !self.output_queue.is_empty() {
             let next_byte = self.output_queue.remove(0);

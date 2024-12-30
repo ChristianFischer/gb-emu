@@ -324,7 +324,7 @@ impl EmulatorApplication {
                     
                     let file_data = file_handle.read().await;
 
-                    let cartridge = Cartridge::load_from_bytes(file_data, None)
+                    let cartridge = Cartridge::load_from_bytes(file_data, Cartridge::NO_RAM)
                             .ok()?
                     ;
 

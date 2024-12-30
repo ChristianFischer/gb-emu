@@ -252,8 +252,8 @@ impl EmulatorState {
         let cartridge = self.emu.get_cartridge().ok_or("No Cartridge loaded")?;
 
         // copy the ROM and RAM data from the existing cartridge
-        let rom = cartridge.get_rom().get_data().clone();
-        let ram = cartridge.get_ram().to_vec();
+        let rom = cartridge.get_rom().as_slice().to_vec();
+        let ram = cartridge.get_ram().as_slice().to_vec();
 
         // create a new cartridge with the existing data
         let new_cartridge = Cartridge::load_from_bytes(rom, Some(ram))

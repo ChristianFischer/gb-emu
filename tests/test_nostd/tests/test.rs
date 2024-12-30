@@ -15,6 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#![no_std]
+
 use gemi_core::gameboy::{Builder, DeviceType};
 
 

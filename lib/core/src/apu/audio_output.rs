@@ -15,8 +15,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#[cfg(feature = "dyn_alloc")]
 use alloc::boxed::Box;
 use core::cmp::min;
+
 use std::sync::mpsc::{channel, Receiver, Sender};
 
 use crate::apu::hpf::StereoHighPassFilters;

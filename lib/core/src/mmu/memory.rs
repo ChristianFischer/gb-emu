@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,7 +15,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use alloc::vec::Vec;
 use core::cmp::max;
 
 #[cfg(feature = "file_io")]
@@ -71,7 +70,12 @@ pub struct Memory {
     device_config: DeviceConfig,
 
     /// Work RAM banks (DMG = 2 * 4kiB, GBC = 8 * 4kiB)
+    #[cfg(feature = "cgb")]
     wram_banks: Vec<WRamBank>,
+
+    /// Work RAM banks (DMG only 2 * 4kiB)
+    #[cfg(not(feature = "cgb"))]
+    wram_banks: [WRamBank; 2],
 
     /// Active Work RAM banks.
     /// Bank 0 is fixed, Bank 1 can be switched between 1-7 on GBC.
@@ -97,10 +101,23 @@ impl Memory {
             EmulationType::GBC => 8,
         };
 
+        #[cfg(not(feature = "cgb"))]
+        {
+            _ = num_wram_banks;
+        }
+
         Self {
             device_config,
 
+            #[cfg(feature = "cgb")]
             wram_banks: core::iter::repeat_with(|| WRamBank::new()).take(num_wram_banks).collect(),
+
+            #[cfg(not(feature = "cgb"))]
+            wram_banks: [
+                WRamBank::new(),
+                WRamBank::new(),
+            ],
+
             wram_active_bank_0: 0,
             wram_active_bank_1: 1,
 

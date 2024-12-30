@@ -17,6 +17,7 @@
 
 pub use serde::SerdeSupport;
 pub use serializable_array::SerializableArray;
+#[cfg(feature = "dyn_alloc")]
 pub use serializable_buffer::SerializableBuffer;
 pub use utils::*;
 

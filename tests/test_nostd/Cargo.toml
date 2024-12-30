@@ -1,5 +1,5 @@
 [package]
-name = "testrunner_nostd"
+name = "test_nostd"
 version = "0.1.0"
 edition = "2021"
 
