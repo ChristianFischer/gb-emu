@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use gemi_core::gameboy::GameBoy;
 use crate::runner::TestCaseError;
+use libgemi::GameBoy;
 
 const MOONEYE_RESULT_SEQ_PASS : &[u8] = &[3, 5, 8, 13, 21, 34];
 const MOONEYE_RESULT_SEQ_FAIL : &[u8] = &[0x42, 0x42, 0x42, 0x42, 0x42, 0x42];
@@ -25,7 +25,7 @@ const MOONEYE_RESULT_SEQ_FAIL : &[u8] = &[0x42, 0x42, 0x42, 0x42, 0x42, 0x42];
 /// Takes a reference to an emulator running a mooneye test rom and checks whether it's passed or not.
 /// Mooneye test roms send a specific sequence of bytes to the serial port to indicate whether they passed or not.
 pub fn check_mooneye_test_passed(gb: &GameBoy) -> Result<(), TestCaseError> {
-    let test_result_message = gb.get_peripherals().serial.get_output();
+    let test_result_message = gb.get_serial_port().get_output();
 
     // Fail if the test rom sent the fail sequence
     if test_result_message == MOONEYE_RESULT_SEQ_FAIL {

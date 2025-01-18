@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,8 @@ use std::sync::mpsc::{channel, Receiver, Sender};
 use crate::apu::hpf::StereoHighPassFilters;
 use crate::apu::sample::{SampleResult, StereoSample};
 use crate::cpu::cpu::CPU_CLOCK_SPEED;
-use crate::gameboy::{Clock, DeviceConfig};
+use crate::device_type::DeviceConfig;
+use crate::emulator_core::Clock;
 use crate::utils::SerializableArray;
 
 

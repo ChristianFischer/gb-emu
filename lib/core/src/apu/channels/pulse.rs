@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ use crate::apu::channels::channel::{default_on_read_register, default_on_write_r
 use crate::apu::channels::frequency::Frequency;
 use crate::apu::channels::generator::SoundGenerator;
 use crate::apu::channels::wave_duty::WaveDuty;
-use crate::gameboy::Clock;
+use crate::emulator_core::Clock;
 
 
 const NRX3_WRITE_ONLY_FREQUENCY : u8    = 0b_1111_1111;

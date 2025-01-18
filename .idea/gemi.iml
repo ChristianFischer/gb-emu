@@ -15,6 +15,8 @@
       <sourceFolder url="file://$MODULE_DIR$/lib/utils/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tests/test_nostd/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tests/test_nostd/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/lib/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/lib/support/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
       <excludeFolder url="file://$MODULE_DIR$/tests/test_suite/res/test_roms" />
     </content>

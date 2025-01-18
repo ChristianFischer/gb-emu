@@ -21,8 +21,8 @@ use std::sync::Mutex;
 use egui::{ColorImage, TextureOptions, Ui};
 use lazy_static::lazy_static;
 
-use gemi_core::ppu::graphic_data::{DmgDisplayPalette, DmgPalette, GbcPaletteData};
-use gemi_core::ppu::sprite_image::SpriteImage;
+use libgemi::core::ppu::graphic_data::{DmgDisplayPalette, DmgPalette, GbcPaletteData};
+use libgemi::core::ppu::sprite_image::SpriteImage;
 
 /// The maximum number of sprites to cache.
 /// If this number is exceeded, the oldest entries will be removed.

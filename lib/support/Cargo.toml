@@ -1,0 +1,37 @@
+[package]
+name = "gemi-support"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bincode = { version = "2.0.0-rc.3", default-features = false, features = ["std", "serde"], optional = true }
+serde = { version = "1.0.214", default-features = false, features = ["std"], optional = true }
+
+[dependencies.gemi-core]
+path = "../core"
+features = [
+    "default",
+    "file_io",
+    "cgb",
+    "apu",
+]
+
+[features]
+
+# Enables support for serialisation/deserialisation using the "serde" crate
+serde = [
+    "dep:serde",
+    "gemi-core/default",
+    "gemi-core/cgb",
+    "gemi-core/serde",
+]
+
+# Supports creating and loading snapshots of the whole emulator state.
+# This will add some more dependencies like serialisation using serde,
+# data compression and may increase the executable size noticeable.
+snapshots = [
+    "gemi-core/default",
+    "gemi-core/cgb",
+    "bincode",
+    "serde",
+]

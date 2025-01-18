@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 use crate::apu::apu::ApuState;
 use crate::apu::channels::channel::ChannelComponent;
 use crate::apu::channels::frequency::Frequency;
-use crate::gameboy::Clock;
+use crate::emulator_core::Clock;
 
 
 /// Trait for any sound generator object.

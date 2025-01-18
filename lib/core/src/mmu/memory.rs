@@ -22,7 +22,7 @@ use std::io;
 
 use crate::boot_rom::BootRom;
 use crate::cartridge::Cartridge;
-use crate::gameboy::{DeviceConfig, EmulationType};
+use crate::device_type::{DeviceConfig, EmulationType};
 use crate::mmu::locations::*;
 use crate::mmu::mbc::{create_mbc, Mbc, MbcImpl, MemoryBankController};
 use crate::mmu::memory_bus::{memory_map, MemoryBusConnection};

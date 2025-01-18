@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,10 +23,11 @@ use eframe::epaint::textures::TextureOptions;
 use eframe::epaint::{ColorImage, Vec2};
 use egui::{Image, Sense, TextStyle, TextureHandle, Ui, Widget};
 use egui_extras::{Column, TableBuilder, TableRow};
-use gemi_core::gameboy::{Clock, DeviceType};
-use gemi_core::mmu::memory_data::MemoryData;
-use gemi_core::ppu::ppu::{SCREEN_H, SCREEN_W};
-use gemi_core::snapshots::Snapshot;
+use libgemi::core::device_type::DeviceType;
+use libgemi::core::emulator_core::Clock;
+use libgemi::core::mmu::memory_data::MemoryData;
+use libgemi::core::ppu::ppu::{SCREEN_H, SCREEN_W};
+use libgemi::snapshots::Snapshot;
 use std::io;
 
 
@@ -237,21 +238,21 @@ impl SnapshotsView {
 
 impl SnapshotEntry {
     fn create_from(state: &EmulatorState) -> io::Result<Self> {
-        let emu = state.emu.get_emulator().ok_or_else(
+        let gb = state.emu.get_gameboy().ok_or_else(
             || io::Error::new(io::ErrorKind::NotFound, "Emulator not found")
         )?;
 
         // create the snapshot itself
-        let snapshot = Snapshot::create_from(emu)?;
+        let snapshot = Snapshot::create_from(gb)?;
 
         // get ROM title
-        let rom_title = match emu.get_peripherals().mem.get_cartridge() {
+        let rom_title = match gb.get_memory().get_cartridge() {
             Some(cartridge) => cartridge.get_title().to_string(),
             None => String::from("---"),
         };
 
         // create image data of the screen to generate a thumbnail
-        let lcd  = emu.get_peripherals().ppu.get_lcd();
+        let lcd  = gb.get_ppu().get_lcd();
         let image = ColorImage::from_rgba_unmultiplied(
             [lcd.get_width() as usize, lcd.get_height() as usize],
             lcd.get_pixels().as_slice()
@@ -261,9 +262,9 @@ impl SnapshotEntry {
             rom_title,
             snapshot,
             created_at:         Utc::now(),
-            created_on_device:  emu.get_config().device,
-            runtime_seconds:    emu.get_total_seconds_processed(),
-            runtime_cycles:     emu.get_total_cycles_processed(),
+            created_on_device:  gb.get_config().device,
+            runtime_seconds:    gb.get_total_seconds_processed(),
+            runtime_cycles:     gb.get_total_cycles_processed(),
             thumbnail_data:     image,
             thumbnail_texture:  None,
         })

@@ -15,7 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use gemi_core::device_type::EmulationType;
+use libgemi::core::device_type::EmulationType;
 use crate::io_utils::{filename_to_symbol, FindRomCallbacks, HandleDirectory, recursive_visit_directory, TestConfigVisitorRef, Workspace};
 use crate::rom_utils::file_is_rom;
 use crate::test_config::{CheckResultConfig, EmulatorTestConfig, RunConfig, SetUpConfig};

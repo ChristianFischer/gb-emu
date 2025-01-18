@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@ pub use with_snapshots::Snapshot as Snapshot;
 
 #[cfg(feature = "snapshots")]
 mod with_snapshots {
-    use crate::gameboy::GameBoy;
-    use crate::utils::SerializableBuffer;
+    use crate::GameBoy;
+    use gemi_core::utils::SerializableBuffer;
     use std::fs::File;
     use std::io;
     use std::io::{Read, Write};

@@ -15,24 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#![no_std]
+pub use gemi_core as core;
 
-use gemi_core::device_type::{DeviceConfig, DeviceType, EmulationType};
-use gemi_core::emulator_core::EmulatorCore;
-
-
-#[test]
-fn test_nostd() {
-    // setup device type
-    let device_config = DeviceConfig {
-        device: DeviceType::GameBoyDmg,
-        emulation: EmulationType::DMG,
-        print_opcodes: false,
-    };
-
-    // create the emulator instance
-    let mut emulator = EmulatorCore::new(device_config);
-
-    // run one single frame
-    emulator.run_frame();
-}
+#[cfg(feature = "support")]
+pub use gemi_support::*;

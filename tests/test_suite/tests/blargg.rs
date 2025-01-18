@@ -15,12 +15,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use gemi_core::gameboy::DeviceType;
+use libgemi::core::device_type::DeviceType;
 use testrunner::run_test_case;
 use tests_shared::test_config::*;
 
 #[allow(unused_imports)]
-use gemi_core::ppu::graphic_data::{Color, DmgDisplayPalette};
+use libgemi::core::ppu::graphic_data::{Color, DmgDisplayPalette};
 
 
 

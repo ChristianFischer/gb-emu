@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ use core::mem::take;
 use core::ops::Sub;
 
 use crate::cpu::interrupts::Interrupt;
-use crate::gameboy::Clock;
+use crate::emulator_core::Clock;
 use crate::mmu::locations::*;
 use crate::mmu::memory_bus::{MemoryBusConnection, MemoryBusSignals};
 use crate::utils::{as_bit_flag, get_bit, get_high};

@@ -20,10 +20,10 @@ use std::mem::swap;
 
 use egui::{Image, pos2, Rect, Response, Sense, Ui, Vec2, Widget};
 
-use gemi_core::ppu::graphic_data::{DmgPalette, GbcPaletteData, Sprite};
-use gemi_core::ppu::ppu::{TILE_ATTR_BIT_H_FLIP, TILE_ATTR_BIT_V_FLIP};
-use gemi_core::ppu::sprite_image::SpriteImage;
-use gemi_core::utils::get_bit;
+use libgemi::core::ppu::graphic_data::{DmgPalette, GbcPaletteData, Sprite};
+use libgemi::core::ppu::ppu::{TILE_ATTR_BIT_H_FLIP, TILE_ATTR_BIT_V_FLIP};
+use libgemi::core::ppu::sprite_image::SpriteImage;
+use libgemi::core::utils::get_bit;
 
 use crate::ui::sprite_cache;
 use crate::ui::sprite_cache::Palette;

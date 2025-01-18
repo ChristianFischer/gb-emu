@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,7 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
+use gemi_core::device_type::DeviceConfig;
+use gemi_core::emulator_core::EmulatorCore;
 use gemi_core::mmu::locations::*;
 
 
@@ -44,19 +45,16 @@ fn test_apu_register(name: &str, address: u16) {
     let readable_bits     = get_readable_bits_for(address);
     let non_readable_bits = !readable_bits;
 
-    let mut gb = gemi_core::gameboy::Builder::new()
-        .finish()
-        .unwrap()
-    ;
+    let mut emulator = Box::new(EmulatorCore::new(DeviceConfig::DEFAULT_DMG));
 
-    gb.cpu.get_mmu_mut().write_u8(address, 0xff);
-    let result1 = gb.cpu.get_mmu().read_u8(address);
+    emulator.cpu.get_mmu_mut().write_u8(address, 0xff);
+    let result1 = emulator.cpu.get_mmu().read_u8(address);
 
     // all bits are expected to be '1'
     assert_eq!(0xff, result1, "register {name} expected value: '{:08b}' got '{:08b}'", 0xff, result1);
 
-    gb.cpu.get_mmu_mut().write_u8(address, 0x00);
-    let result2 = gb.cpu.get_mmu().read_u8(address);
+    emulator.cpu.get_mmu_mut().write_u8(address, 0x00);
+    let result2 = emulator.cpu.get_mmu().read_u8(address);
 
     // only non-readable bits are expected to be '1'
     assert_eq!(non_readable_bits, result2, "register {name} expected value: '{:08b}' got '{:08b}'", non_readable_bits, result2);
@@ -127,32 +125,29 @@ mod apu_control {
 
 #[test]
 fn test_registers_after_reset() {
-    let mut gb = gemi_core::gameboy::Builder::new()
-        .finish()
-        .unwrap()
-    ;
+    let mut emulator = Box::new(EmulatorCore::new(DeviceConfig::DEFAULT_DMG));
 
     // turn apu on
-    gb.get_mmu_mut().write_u8(MEMORY_LOCATION_APU_NR52, 0x80);
+    emulator.get_mmu_mut().write_u8(MEMORY_LOCATION_APU_NR52, 0x80);
 
     // set all registers to 0xff
     for register in MEMORY_LOCATION_APU_NR10 ..= MEMORY_LOCATION_APU_NR51 {
-        gb.get_mmu_mut().write_u8(register, 0xff);
+        emulator.get_mmu_mut().write_u8(register, 0xff);
     }
 
     // check all registers if they return 0xff
     for register in MEMORY_LOCATION_APU_NR10 ..= MEMORY_LOCATION_APU_NR51 {
-        let value = gb.get_mmu_mut().read_u8(register);
+        let value = emulator.get_mmu_mut().read_u8(register);
         assert_eq!(0xff, value);
     }
 
     // turn apu off and on (reset)
-    gb.get_mmu_mut().write_u8(MEMORY_LOCATION_APU_NR52, 0x00);
-    gb.get_mmu_mut().write_u8(MEMORY_LOCATION_APU_NR52, 0x80);
+    emulator.get_mmu_mut().write_u8(MEMORY_LOCATION_APU_NR52, 0x00);
+    emulator.get_mmu_mut().write_u8(MEMORY_LOCATION_APU_NR52, 0x80);
 
     // check all registers after reset
     for register in MEMORY_LOCATION_APU_NR10 ..= MEMORY_LOCATION_APU_NR51 {
-        let value             = gb.get_mmu_mut().read_u8(register);
+        let value             = emulator.get_mmu_mut().read_u8(register);
         let readable_bits     = get_readable_bits_for(register);
         let non_readable_bits = !readable_bits;
 

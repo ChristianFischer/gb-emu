@@ -1,0 +1,76 @@
+[package]
+name = "libgemi"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies.gemi-core]
+path = "core"
+
+[dependencies.gemi-support]
+path = "support"
+optional = true
+
+
+[features]
+default = [
+    "std",
+    "dyn_alloc",
+    "file_io",
+    "cgb",
+    "apu",
+    "support",
+]
+
+# Enables the support library, which provides the "default" way
+# of building an emulator instance.
+support = [
+    "std",
+    "dyn_alloc",
+    "gemi-support",
+]
+
+# A feature to use the standard library. This may be disabled to support
+# platforms with limited capabilities like embedded devices.
+std = [
+    "gemi-core/std",
+]
+
+# Enables dynamic allocation support.
+# This is required to hold larger data for memory to support cartridges > 32kiB
+# and GameBoyColor support
+dyn_alloc = [
+    "gemi-core/dyn_alloc",
+]
+
+# `file_io` adds functions to load and write RAM and ROM images from and into files.
+# This is enabled by default and may be disabled for environments which do not
+# support file access.
+file_io = [
+    "gemi-core/file_io",
+]
+
+# Enables GameBoyColor support
+# GBC requires additional memory, so disabling will reduce memory usage of the emulator
+cgb = [
+    "gemi-core/cgb",
+]
+
+# Enables the audio processing unit.
+# Disabling will remove audio support and can be used to reduce executable size.
+apu = [
+    "gemi-core/apu",
+]
+
+# Enables support for serialisation/deserialisation using the "serde" crate
+serde = [
+    "gemi-core/serde",
+    "gemi-support/serde",
+]
+
+# Supports creating and loading snapshots of the whole emulator state.
+# This will add some more dependencies like serialisation using serde,
+# data compression and may increase the executable size noticeable.
+snapshots = [
+    "support",
+    "gemi-support/snapshots",
+]

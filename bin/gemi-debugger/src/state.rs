@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,18 +15,20 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use gemi_core::cartridge::Cartridge;
-use gemi_core::debug::DebugEvent;
-use gemi_core::gameboy::{Clock, DeviceType, EmulatorUpdateResults, GameBoy};
-use gemi_core::input::InputButton;
-use gemi_core::mmu::memory_data::MemoryData;
-use gemi_core::ppu::ppu::CPU_CYCLES_PER_FRAME;
+use crate::selection::{Kind, Selection};
 use gemi_utils::keybindings::KeyBindings;
+use libgemi::core::cartridge::Cartridge;
+use libgemi::core::debug::DebugEvent;
+use libgemi::core::device_type::DeviceType;
+use libgemi::core::emulator_core::{Clock, EmulatorCore, EmulatorUpdateResults};
+use libgemi::core::input::InputButton;
+use libgemi::core::mmu::memory_data::MemoryData;
+use libgemi::core::ppu::ppu::CPU_CYCLES_PER_FRAME;
+use libgemi::GameBoy;
 use serde::{Deserialize, Deserializer};
 use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
 
-use crate::selection::{Kind, Selection};
 
 /// An enum to store the device type to be emulated
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -332,15 +334,28 @@ impl EmulatorState {
 
 
 impl EmulatorInstance {
+
     /// Get the currently running emulator instance.
-    pub fn get_emulator(&self) -> Option<&GameBoy> {
+    pub fn get_gameboy(&self) -> Option<&GameBoy> {
         self.gb.as_ref()
     }
 
 
     /// Get the currently running emulator instance.
-    pub fn get_emulator_mut(&mut self) -> Option<&mut GameBoy> {
+    pub fn get_gameboy_mut(&mut self) -> Option<&mut GameBoy> {
         self.gb.as_mut()
+    }
+
+
+    /// Get the currently running emulator instance.
+    pub fn get_emulator(&self) -> Option<&EmulatorCore> {
+        self.gb.as_ref().map(|gb| gb.get_emulator())
+    }
+
+
+    /// Get the currently running emulator instance.
+    pub fn get_emulator_mut(&mut self) -> Option<&mut EmulatorCore> {
+        self.gb.as_mut().map(|gb| gb.get_emulator_mut())
     }
 
 
@@ -385,7 +400,7 @@ impl EmulatorInstance {
 
     /// Run the emulator until a certain condition is met. 
     pub fn run_until<F>(&mut self, condition: F)
-        where F: Fn(&GameBoy, Clock, EmulatorUpdateResults) -> bool
+        where F: Fn(&EmulatorCore, Clock, EmulatorUpdateResults) -> bool
     {
         if let Some(emu) = self.get_emulator_mut() {
             let mut cycles = 0;

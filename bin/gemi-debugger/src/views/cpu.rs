@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,13 +17,14 @@
 
 use egui::{Grid, Label, PointerButton, Sense, Ui, Vec2, Widget};
 
-use gemi_core::cpu::cpu::{CpuFlag, RegisterR8};
-use gemi_core::gameboy::GameBoy;
-use gemi_core::utils::to_u8;
+use libgemi::core::cpu::cpu::{CpuFlag, RegisterR8};
+use libgemi::core::emulator_core::EmulatorCore;
+use libgemi::core::utils::to_u8;
 
 use crate::state::EmulatorState;
 use crate::ui::style::GemiStyle;
 use crate::views::View;
+
 
 /// A view to display runtime information about the CPU.
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -237,8 +238,8 @@ impl CpuView {
         &mut self,
         ui: &mut Ui, state: &mut EmulatorState,
         expected_edit_mode: EditMode,
-        on_read_value: impl FnOnce(&GameBoy) -> String,
-        on_write_value: impl FnOnce(&mut GameBoy, &String)
+        on_read_value: impl FnOnce(&EmulatorCore) -> String,
+        on_write_value: impl FnOnce(&mut EmulatorCore, &String)
     ) {
         let is_paused = state.ui.is_paused();
 

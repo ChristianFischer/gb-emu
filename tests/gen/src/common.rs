@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,10 +32,10 @@ pub const TEST_FILE_HEADER: &str = /*language=rust*/ "/*
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use gemi_core::gameboy::DeviceType;
+use libgemi::core::device_type::DeviceType;
 use testrunner::run_test_case;
 use tests_shared::test_config::*;
 
 #[allow(unused_imports)]
-use gemi_core::ppu::graphic_data::{Color, DmgDisplayPalette};
+use libgemi::core::ppu::graphic_data::{Color, DmgDisplayPalette};
 ";

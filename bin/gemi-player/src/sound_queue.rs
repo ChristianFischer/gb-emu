@@ -15,9 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use gemi_core::apu::audio_output::{AudioOutputSpec, SamplesReceiver};
-use gemi_core::apu::Apu;
-use gemi_core::apu::{audio_output, sample};
+use libgemi::core::apu::audio_output::{AudioOutputSpec, SamplesReceiver};
+use libgemi::core::apu::Apu;
+use libgemi::core::apu::{audio_output, sample};
 use sdl2::audio::*;
 use sdl2::Sdl;
 

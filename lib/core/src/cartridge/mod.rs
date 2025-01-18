@@ -15,24 +15,5 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#![no_std]
-
-use gemi_core::device_type::{DeviceConfig, DeviceType, EmulationType};
-use gemi_core::emulator_core::EmulatorCore;
-
-
-#[test]
-fn test_nostd() {
-    // setup device type
-    let device_config = DeviceConfig {
-        device: DeviceType::GameBoyDmg,
-        emulation: EmulationType::DMG,
-        print_opcodes: false,
-    };
-
-    // create the emulator instance
-    let mut emulator = EmulatorCore::new(device_config);
-
-    // run one single frame
-    emulator.run_frame();
-}
+mod cartridge;
+pub use cartridge::*;

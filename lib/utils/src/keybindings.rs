@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use gemi_core::gameboy::GameBoy;
 use gemi_core::input::{Input, InputButton};
+use gemi_support::GameBoy;
 
 
 /// An utility to map key bindings of a frontend system to emulator input buttons.
@@ -131,7 +131,7 @@ impl<KeyCode> KeyBindings<KeyCode>
                     key_entry.pressed = pressed;
 
                     // update the emulator's input state
-                    gb.get_peripherals_mut().input.set_button_pressed(
+                    gb.get_input_mut().set_button_pressed(
                         entry.button,
                         entry.is_any_pressed(),
                     );
@@ -143,7 +143,7 @@ impl<KeyCode> KeyBindings<KeyCode>
 
     /// Apply the current state of each [InputButton] to the emulator reference.
     pub fn apply_button_states(&self, gb: &mut GameBoy) {
-        self.apply_button_states_to_input(&mut gb.get_peripherals_mut().input);
+        self.apply_button_states_to_input(gb.get_input_mut());
     }
 
 
@@ -169,7 +169,7 @@ impl<KeyCode> KeyBindings<KeyCode>
             }
 
             // update the emulator's input state
-            gb.get_peripherals_mut().input.set_button_pressed(
+            gb.get_input_mut().set_button_pressed(
                 entry.button,
                 false
             );

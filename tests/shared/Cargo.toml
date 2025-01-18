@@ -7,4 +7,4 @@ edition = "2021"
 image = { version = "0.25.5", default-features = false, features = [ "png" ] }
 reqwest = { version = "0.12.9", features = ["blocking"] }
 zip-extract = "0.2.1"
-gemi-core = { path =  "../../lib/core" }
+libgemi = { path =  "../../lib" }

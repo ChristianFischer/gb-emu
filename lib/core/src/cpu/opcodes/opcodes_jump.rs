@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@
  */
 
 use crate::cpu::cpu::{CpuFlag, RegisterR16};
-use crate::gameboy::{Clock, GameBoy};
 use crate::cpu::opcode::{opcode, OpCodeContext};
+use crate::emulator_core::{Clock, EmulatorCore};
 
 const BRANCH_CYCLES_JMP:    Clock =  4;
 const BRANCH_CYCLES_CALL:   Clock = 12;
@@ -25,7 +25,7 @@ const BRANCH_CYCLES_RET:    Clock = 12;
 
 
 /// Performs a jump to an address if a condition is met.
-fn jp_if_u16(gb: &mut GameBoy, ctx: &mut OpCodeContext, flag: CpuFlag, value: bool) {
+fn jp_if_u16(gb: &mut EmulatorCore, ctx: &mut OpCodeContext, flag: CpuFlag, value: bool) {
     let address = gb.cpu.fetch_u16();
     if gb.cpu.is_flag_set(flag) == value {
         ctx.add_cycles(BRANCH_CYCLES_JMP);
@@ -34,7 +34,7 @@ fn jp_if_u16(gb: &mut GameBoy, ctx: &mut OpCodeContext, flag: CpuFlag, value: bo
 }
 
 /// Performs a relative jump if a condition is met.
-fn jr_if_i8(gb: &mut GameBoy, ctx: &mut OpCodeContext, flag: CpuFlag, value: bool) {
+fn jr_if_i8(gb: &mut EmulatorCore, ctx: &mut OpCodeContext, flag: CpuFlag, value: bool) {
     let offset = gb.cpu.fetch_i8();
     if gb.cpu.is_flag_set(flag) == value {
         ctx.add_cycles(BRANCH_CYCLES_JMP);
@@ -44,20 +44,20 @@ fn jr_if_i8(gb: &mut GameBoy, ctx: &mut OpCodeContext, flag: CpuFlag, value: boo
 
 /// Calls a subroutine by storing the current instruction pointer on the stack
 /// and set the instruction pointer to a new address.
-fn call_addr(gb: &mut GameBoy, address: u16) {
+fn call_addr(gb: &mut EmulatorCore, address: u16) {
     gb.cpu.call_addr(address);
 }
 
 /// Calls a subroutine by storing the current instruction pointer on the stack
 /// and set the instruction pointer to a new address.
-fn call_addr_u16(gb: &mut GameBoy) {
+fn call_addr_u16(gb: &mut EmulatorCore) {
     let address = gb.cpu.fetch_u16();
     call_addr(gb, address);
 }
 
 /// Calls a subroutine by storing the current instruction pointer on the stack
 /// and set the instruction pointer to a new address, if a condition is met.
-fn call_addr_if(gb: &mut GameBoy, ctx: &mut OpCodeContext, flag: CpuFlag, value: bool, address: u16) {
+fn call_addr_if(gb: &mut EmulatorCore, ctx: &mut OpCodeContext, flag: CpuFlag, value: bool, address: u16) {
     if gb.cpu.is_flag_set(flag) == value {
         ctx.add_cycles(BRANCH_CYCLES_CALL);
         call_addr(gb, address);
@@ -67,19 +67,19 @@ fn call_addr_if(gb: &mut GameBoy, ctx: &mut OpCodeContext, flag: CpuFlag, value:
 /// Calls a subroutine by storing the current instruction pointer on the stack
 /// and set the instruction pointer to a new address, taken from the current instruction pointer,
 /// if a condition is met.
-fn call_u16_if(gb: &mut GameBoy, ctx: &mut OpCodeContext, flag: CpuFlag, value: bool) {
+fn call_u16_if(gb: &mut EmulatorCore, ctx: &mut OpCodeContext, flag: CpuFlag, value: bool) {
     let address = gb.cpu.fetch_u16();
     call_addr_if(gb, ctx, flag, value, address);
 }
 
 /// Returns from a subroutine by taking the previous instruction pointer address from the stack.
-fn ret_from_call(gb: &mut GameBoy) {
+fn ret_from_call(gb: &mut EmulatorCore) {
     gb.cpu.ret_from_call();
 }
 
 /// Returns from a subroutine by taking the previous instruction pointer address from the stack,
 /// if a condition is met.
-fn ret_if(gb: &mut GameBoy, ctx: &mut OpCodeContext, flag: CpuFlag, value: bool) {
+fn ret_if(gb: &mut EmulatorCore, ctx: &mut OpCodeContext, flag: CpuFlag, value: bool) {
     if gb.cpu.is_flag_set(flag) == value {
         ctx.add_cycles(BRANCH_CYCLES_RET);
         ret_from_call(gb);

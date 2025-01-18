@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,17 +19,17 @@
 use std::fmt::{Display, Formatter};
 
 use crate::cpu::opcodes::{OPCODE_TABLE, OPCODE_TABLE_EXTENDED};
-use crate::gameboy::{Clock, GameBoy};
+use crate::emulator_core::{Clock, EmulatorCore};
 use crate::utils::{to_u16, to_u8};
 
-type ProcessOpCode = fn(gb: &mut GameBoy, ctx: &mut OpCodeContext) -> OpCodeResult;
+type ProcessOpCode = fn(gb: &mut EmulatorCore, ctx: &mut OpCodeContext) -> OpCodeResult;
 
 
 /// A macro to generate an opcode implementation function.
 macro_rules! opcode {
     ($(#[$meta:meta])? $name:ident, [$($bind_gb:ident)? $(, $bind_ctx:ident)?] $($body:tt)*) => {
         $(#[$meta])?
-        pub fn $name(gb: &mut GameBoy, ctx: &mut OpCodeContext) -> crate::cpu::opcode::OpCodeResult {
+        pub fn $name(gb: &mut EmulatorCore, ctx: &mut OpCodeContext) -> crate::cpu::opcode::OpCodeResult {
             // silence 'unused' warning for gb and ctx
             { let _ = (&gb, &ctx); }
 

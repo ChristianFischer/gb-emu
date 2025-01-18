@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,12 +17,12 @@
 
 use egui::{Color32, Rgba, Ui};
 
-use gemi_core::gameboy::GameBoy;
-use gemi_core::mmu::locations::MEMORY_LOCATION_VRAM_BEGIN;
-use gemi_core::ppu::flags::LcdControlFlag;
-use gemi_core::ppu::graphic_data::{TileMap, TileSet};
-use gemi_core::ppu::ppu::TILE_ATTR_BIT_VRAM_BANK;
-use gemi_core::utils::get_bit;
+use libgemi::core::mmu::locations::MEMORY_LOCATION_VRAM_BEGIN;
+use libgemi::core::ppu::flags::LcdControlFlag;
+use libgemi::core::ppu::graphic_data::{TileMap, TileSet};
+use libgemi::core::ppu::ppu::TILE_ATTR_BIT_VRAM_BANK;
+use libgemi::core::utils::get_bit;
+use libgemi::GameBoy;
 
 use crate::selection::{Kind, Selected};
 use crate::state::UiStates;
@@ -129,7 +129,7 @@ impl HighlightTesting {
         match (a, b) {
             // sprites highlighted by a selected oam entry
             (Selected::Sprite(bank_index, sprite_index), Selected::OamEntry(oam_index)) => {
-                let oam   = gb.get_peripherals().ppu.get_oam();
+                let oam   = gb.get_ppu().get_oam();
                 let entry = &oam[*oam_index];
 
                 // when on GBC, also check the bank index
@@ -146,7 +146,7 @@ impl HighlightTesting {
 
             // sprites highlighted by a selected tile
             (Selected::Sprite(bank_index, sprite_index), Selected::Tile(tilemap_bit, tile_index)) => {
-                let ppu     = &gb.get_peripherals().ppu;
+                let ppu     = gb.get_ppu();
                 let vram0   = ppu.get_vram(0);
                 let tilemap = TileMap::by_select_bit(*tilemap_bit);
                 let tileset = TileSet::by_select_bit(ppu.check_lcdc(LcdControlFlag::TileDataSelect));

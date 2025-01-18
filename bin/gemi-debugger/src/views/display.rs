@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,14 +19,15 @@ use std::cmp::min;
 use std::ops::{Add, Div, Mul, Sub};
 
 use eframe::emath::Rect;
-use eframe::epaint::{ColorImage, Stroke};
 use eframe::epaint::textures::TextureOptions;
-use egui::{Color32, Context, Grid, Image, Pos2, Sense, TextureHandle, Ui, Vec2, vec2, Widget};
+use eframe::epaint::{ColorImage, Stroke};
+use egui::{vec2, Color32, Context, Grid, Image, Pos2, Sense, TextureHandle, Ui, Vec2, Widget};
 
-use gemi_core::gameboy::{Clock, GameBoy};
-use gemi_core::ppu::flags::LcdControlFlag;
-use gemi_core::ppu::graphic_data::Sprite;
-use gemi_core::ppu::ppu::{SCREEN_H, SCREEN_W};
+use libgemi::core::emulator_core::Clock;
+use libgemi::core::ppu::flags::LcdControlFlag;
+use libgemi::core::ppu::graphic_data::Sprite;
+use libgemi::core::ppu::ppu::{SCREEN_H, SCREEN_W};
+use libgemi::GameBoy;
 
 use crate::highlight::test_selection;
 use crate::selection::Selected;
@@ -66,12 +67,12 @@ impl View for EmulatorDisplayView {
 
 
     fn ui(&mut self, state: &mut EmulatorState, ui: &mut Ui) {
-        match state.emu.get_emulator() {
+        match state.emu.get_gameboy() {
             None => {}
 
-            Some(emu) => {
-                self.update_display_image(ui.ctx(), emu, &mut state.ui);
-                self.render_display_image(ui, emu, &mut state.ui);
+            Some(gb) => {
+                self.update_display_image(ui.ctx(), gb, &mut state.ui);
+                self.render_display_image(ui, gb, &mut state.ui);
             }
         }
     }
@@ -87,9 +88,9 @@ impl EmulatorDisplayView {
 
 
     /// Checks whether the cached display image is outdated and updates the image, if necessary.
-    fn update_display_image(&mut self, ctx: &Context, emu: &GameBoy, ui_states: &mut UiStates) {
-        if self.rt.display_image.is_none() || self.rt.display_image_timestamp != emu.get_total_cycles_processed() {
-            let ppu    = &emu.get_peripherals().ppu;
+    fn update_display_image(&mut self, ctx: &Context, gb: &GameBoy, ui_states: &mut UiStates) {
+        if self.rt.display_image.is_none() || self.rt.display_image_timestamp != gb.get_total_cycles_processed() {
+            let ppu    = &gb.get_ppu();
             let lcd    = ppu.get_lcd();
             let size   = [lcd.get_width() as _, lcd.get_height() as _];
             let pixels = lcd.get_pixels_as_slice();
@@ -121,7 +122,7 @@ impl EmulatorDisplayView {
             let texture = ctx.load_texture("display", image, TextureOptions::NEAREST);
 
             self.rt.display_image           = Some(texture);
-            self.rt.display_image_timestamp = emu.get_total_cycles_processed();
+            self.rt.display_image_timestamp = gb.get_total_cycles_processed();
         }
     }
 
@@ -221,7 +222,7 @@ impl EmulatorDisplayView {
         
         if response.hovered() {
             if let Some(hover_pos) = ui.input(|input| input.pointer.hover_pos()) {
-                let ppu           = &emu.get_peripherals().ppu;
+                let ppu           = emu.get_ppu();
                 let oam           = ppu.get_oam();
                 let large_sprites = ppu.check_lcdc(LcdControlFlag::SpritesSize);
                 let sprite_size   = if large_sprites { 16 } else { 8 };
@@ -294,7 +295,7 @@ impl EmulatorDisplayView {
     /// Render overlays on the display of the currently running emulator to
     /// highlight any currently selected sprites and tiles.
     fn render_selection_overlays(&self, ui: &mut Ui, ui_states: &mut UiStates, emu: &GameBoy, origin: Pos2, scale: f32) {
-        let ppu           = &emu.get_peripherals().ppu;
+        let ppu           = emu.get_ppu();
         let oam           = ppu.get_oam();
         let large_sprites = ppu.check_lcdc(LcdControlFlag::SpritesSize);
 

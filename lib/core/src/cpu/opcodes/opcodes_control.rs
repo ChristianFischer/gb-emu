@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,9 +16,10 @@
  */
 
 use crate::cpu::cpu::CpuFlag;
-use crate::gameboy::GameBoy;
 use crate::cpu::opcode::{opcode, OpCodeContext};
+use crate::emulator_core::EmulatorCore;
 use crate::utils::signed_overflow_add_u16;
+
 
 opcode!(nop, []);
 

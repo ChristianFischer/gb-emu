@@ -16,7 +16,7 @@
  */
 
 use egui::Ui;
-use gemi_core::cartridge::GameBoyColorSupport;
+use libgemi::core::cartridge::GameBoyColorSupport;
 use crate::state::EmulatorState;
 use crate::ui::data_list::DataList;
 use crate::views::View;

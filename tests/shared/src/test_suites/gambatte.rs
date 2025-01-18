@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,13 +15,13 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use std::collections::HashSet;
-use std::path::PathBuf;
-use gemi_core::gameboy::DeviceType;
-use gemi_core::ppu::graphic_data::{Color, DmgDisplayPalette};
-use crate::io_utils::{filename_to_symbol, FindRomCallbacks, get_plain_filename, HandleDirectory, recursive_visit_directory, TestConfigVisitorRef, Workspace};
+use crate::io_utils::{filename_to_symbol, get_plain_filename, recursive_visit_directory, FindRomCallbacks, HandleDirectory, TestConfigVisitorRef, Workspace};
 use crate::rom_utils::file_is_rom;
 use crate::test_config::{CheckResultConfig, EmulatorTestConfig, LcdColorMod, RunConfig, SetUpConfig};
+use libgemi::core::device_type::DeviceType;
+use libgemi::core::ppu::graphic_data::{Color, DmgDisplayPalette};
+use std::collections::HashSet;
+use std::path::PathBuf;
 
 
 /// Lookup table to check for device types within gambatte test rom file names.

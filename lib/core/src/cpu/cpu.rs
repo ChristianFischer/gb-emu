@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ use std::fmt::{Display, Formatter};
 
 use crate::cpu::opcode::{Instruction, OpCode};
 use crate::cpu::opcodes::{OPCODE_TABLE, OPCODE_TABLE_EXTENDED};
-use crate::gameboy::Clock;
+use crate::emulator_core::Clock;
 use crate::mmu::mmu::Mmu;
 use crate::utils::{change_bit, get_bit, to_u16, to_u8};
 

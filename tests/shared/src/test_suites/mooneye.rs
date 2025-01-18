@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,9 @@
 use std::collections::HashSet;
 use std::path::PathBuf;
 
-use gemi_core::gameboy::DeviceType;
+use libgemi::core::device_type::DeviceType;
 
-use crate::io_utils::{filename_to_symbol, FindRomCallbacks, HandleDirectory, recursive_visit_directory, TestConfigVisitorRef, Workspace};
+use crate::io_utils::{filename_to_symbol, recursive_visit_directory, FindRomCallbacks, HandleDirectory, TestConfigVisitorRef, Workspace};
 use crate::test_config::{CheckResultConfig, EmulatorTestConfig, RunConfig, SetUpConfig};
 
 

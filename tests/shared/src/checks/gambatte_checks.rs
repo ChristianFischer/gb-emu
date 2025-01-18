@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use gemi_core::gameboy::GameBoy;
-use gemi_core::ppu::ppu::LcdBuffer;
+use libgemi::core::ppu::ppu::LcdBuffer;
+use libgemi::GameBoy;
 
 use crate::runner::TestCaseError;
 
@@ -219,7 +219,7 @@ const GAMBATTE_DIGIT_BITMAPS : &[BitmapDigitEntry] = &[
 pub fn check_gambatte_display_code(gb: &GameBoy, display_code_expected: &str) -> Result<(), TestCaseError> {
     let length = display_code_expected.len();
 
-    match read_characters_from_display(gb.get_peripherals().ppu.get_lcd(), length) {
+    match read_characters_from_display(gb.get_ppu().get_lcd(), length) {
         Some(display_code_read) => {
             if display_code_read != display_code_expected {
                 Err(TestCaseError::Failed(format!(

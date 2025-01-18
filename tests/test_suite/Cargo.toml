@@ -5,7 +5,7 @@ edition = "2021"
 build = "build.rs"
 
 [dependencies]
-gemi-core = { path = "../../lib/core" }
+libgemi = { path = "../../lib" }
 tests-shared = { path = "../shared" }
 
 [build-dependencies]

@@ -1250,8 +1250,8 @@ dependencies = [
 name = "gemi"
 version = "0.1.0"
 dependencies = [
- "gemi-core",
  "gemi-utils",
+ "libgemi",
  "sdl2",
 ]
 
@@ -1260,7 +1260,6 @@ name = "gemi-core"
 version = "0.1.0"
 dependencies = [
  "base64 0.22.1",
- "bincode",
  "flagset",
  "serde",
  "zstd",
@@ -1276,12 +1275,21 @@ dependencies = [
  "egui_extras",
  "egui_tiles",
  "futures",
- "gemi-core",
  "gemi-utils",
  "lazy_static",
+ "libgemi",
  "rfd",
  "serde",
  "wasm-bindgen-futures",
+]
+
+[[package]]
+name = "gemi-support"
+version = "0.1.0"
+dependencies = [
+ "bincode",
+ "gemi-core",
+ "serde",
 ]
 
 [[package]]
@@ -1289,6 +1297,7 @@ name = "gemi-utils"
 version = "0.1.0"
 dependencies = [
  "gemi-core",
+ "gemi-support",
 ]
 
 [[package]]
@@ -1883,6 +1892,14 @@ name = "libc"
 version = "0.2.162"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "18d287de67fe55fd7e1581fe933d965a5a9477b38e949cfa9f8574ef01506398"
+
+[[package]]
+name = "libgemi"
+version = "0.1.0"
+dependencies = [
+ "gemi-core",
+ "gemi-support",
+]
 
 [[package]]
 name = "libloading"
@@ -3144,7 +3161,7 @@ dependencies = [
 name = "testrunner"
 version = "0.1.0"
 dependencies = [
- "gemi-core",
+ "libgemi",
  "tests-generator",
  "tests-shared",
 ]
@@ -3153,7 +3170,7 @@ dependencies = [
 name = "tests-generator"
 version = "0.1.0"
 dependencies = [
- "gemi-core",
+ "libgemi",
  "tests-shared",
 ]
 
@@ -3161,8 +3178,8 @@ dependencies = [
 name = "tests-shared"
 version = "0.1.0"
 dependencies = [
- "gemi-core",
  "image",
+ "libgemi",
  "reqwest",
  "zip-extract",
 ]
@@ -3402,8 +3419,8 @@ name = "update-test-report"
 version = "0.1.0"
 dependencies = [
  "futures",
- "gemi-core",
  "indicatif",
+ "libgemi",
  "tests-shared",
  "tokio",
  "tokio-stream",
@@ -3553,8 +3570,8 @@ checksum = "65fc09f10666a9f147042251e0dda9c18f166ff7de300607007e96bdebc1068d"
 name = "wasm-player"
 version = "0.1.0"
 dependencies = [
- "gemi-core",
  "gemi-utils",
+ "libgemi",
  "wasm-bindgen",
  "web-sys",
 ]

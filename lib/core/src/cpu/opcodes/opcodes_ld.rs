@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,92 +16,92 @@
  */
 
 use crate::cpu::cpu::{CpuFlag, RegisterR16, RegisterR8};
-use crate::gameboy::GameBoy;
 use crate::cpu::opcode::{opcode, OpCodeContext};
+use crate::emulator_core::EmulatorCore;
 use crate::utils::signed_overflow_add_u16;
 
 /// Loads the content of a 8bit register into another one.
-fn ld_r8_r8(gb: &mut GameBoy, dst: RegisterR8, src: RegisterR8) {
+fn ld_r8_r8(gb: &mut EmulatorCore, dst: RegisterR8, src: RegisterR8) {
     let value = gb.cpu.get_r8(src);
     gb.cpu.set_r8(dst, value);
 }
 
 /// Loads a constant 8bit value from the current instruction pointer into a 8bit register.
-fn ld_r8_u8(gb: &mut GameBoy, dst: RegisterR8) {
+fn ld_r8_u8(gb: &mut EmulatorCore, dst: RegisterR8) {
     let value = gb.cpu.fetch_u8();
     gb.cpu.set_r8(dst, value);
 }
 
 /// Loads the content of a 8bit register into the device memory.
-fn ld_addr_r8(gb: &mut GameBoy, dst_address: u16, src: RegisterR8) {
+fn ld_addr_r8(gb: &mut EmulatorCore, dst_address: u16, src: RegisterR8) {
     let value = gb.cpu.get_r8(src);
     gb.get_mmu_mut().write_u8(dst_address, value);
 }
 
 /// Writes a 8bit value to a given address in the device memory.
-fn ld_addr_u8(gb: &mut GameBoy, dst_address: u16, value: u8) {
+fn ld_addr_u8(gb: &mut EmulatorCore, dst_address: u16, value: u8) {
     gb.get_mmu_mut().write_u8(dst_address, value);
 }
 
 /// Writes a 8bit value to a given address in the device memory.
-fn ld_addr_u16(gb: &mut GameBoy, dst_address: u16, value: u16) {
+fn ld_addr_u16(gb: &mut EmulatorCore, dst_address: u16, value: u16) {
     gb.get_mmu_mut().write_u16(dst_address, value);
 }
 
 /// Loads the value on a given address into a 8bit register.
-fn ld_r8_addr(gb: &mut GameBoy, dst: RegisterR8, src_address: u16) {
+fn ld_r8_addr(gb: &mut EmulatorCore, dst: RegisterR8, src_address: u16) {
     let value = gb.get_mmu().read_u8(src_address);
     gb.cpu.set_r8(dst, value);
 }
 
 /// Loads the content of a 8bit register into the address stored in the target R16 register.
-fn ld_r16ptr_r8(gb: &mut GameBoy, dst: RegisterR16, src: RegisterR8) {
+fn ld_r16ptr_r8(gb: &mut EmulatorCore, dst: RegisterR16, src: RegisterR8) {
     let address = gb.cpu.get_r16(dst);
     ld_addr_r8(gb, address, src);
 }
 
 /// Loads the content of a 8bit register into a constant address of the device memory.
-fn ld_u16ptr_r8(gb: &mut GameBoy, src: RegisterR8) {
+fn ld_u16ptr_r8(gb: &mut EmulatorCore, src: RegisterR8) {
     let address = gb.cpu.fetch_u16();
     ld_addr_r8(gb, address, src);
 }
 
 /// Loads a constant 8bit value from the current instruction pointer
 /// into the address stored in the target R16 register.
-fn ld_r16ptr_u8(gb: &mut GameBoy, dst: RegisterR16) {
+fn ld_r16ptr_u8(gb: &mut EmulatorCore, dst: RegisterR16) {
     let address = gb.cpu.get_r16(dst);
     let value   = gb.cpu.fetch_u8();
     ld_addr_u8(gb, address, value);
 }
 
 /// Loads a 16bit value into a constant address of the device memory.
-fn ld_u16ptr_u16v(gb: &mut GameBoy, value: u16) {
+fn ld_u16ptr_u16v(gb: &mut EmulatorCore, value: u16) {
     let address = gb.cpu.fetch_u16();
     ld_addr_u16(gb, address, value);
 }
 
 /// Loads the value at the address stored in a 16bit register
 /// into a 8bit register.
-fn ld_r8_r16ptr(gb: &mut GameBoy, dst: RegisterR8, src: RegisterR16) {
+fn ld_r8_r16ptr(gb: &mut EmulatorCore, dst: RegisterR8, src: RegisterR16) {
     let address = gb.cpu.get_r16(src);
     ld_r8_addr(gb, dst, address);
 }
 
 /// Loads the value at the address stored in a 16bit constant
 /// into a 8bit register.
-fn ld_r8_u16ptr(gb: &mut GameBoy, dst: RegisterR8) {
+fn ld_r8_u16ptr(gb: &mut EmulatorCore, dst: RegisterR8) {
     let address = gb.cpu.fetch_u16();
     ld_r8_addr(gb, dst, address);
 }
 
 /// Loads a constant 16bit value from the current instruction pointer into a 16bit register.
-fn ld_r16_u16(gb: &mut GameBoy, dst: RegisterR16) {
+fn ld_r16_u16(gb: &mut EmulatorCore, dst: RegisterR16) {
     let value = gb.cpu.fetch_u16();
     gb.cpu.set_r16(dst, value);
 }
 
 /// Loads the value of a 8bit register into the device memory at the address (0xff00 + u8).
-fn ldh_u8_r8(gb: &mut GameBoy, src: RegisterR8) {
+fn ldh_u8_r8(gb: &mut EmulatorCore, src: RegisterR8) {
     let value     = gb.cpu.get_r8(src);
     let address_h = gb.cpu.fetch_u8();
     let address   = 0xff00 | (address_h as u16);
@@ -109,7 +109,7 @@ fn ldh_u8_r8(gb: &mut GameBoy, src: RegisterR8) {
 }
 
 /// Loads a value from the device memory at the address (0xff00 + u8) into a 8bit register.
-fn ldh_r8_u8(gb: &mut GameBoy, dst: RegisterR8) {
+fn ldh_r8_u8(gb: &mut EmulatorCore, dst: RegisterR8) {
     let address_h = gb.cpu.fetch_u8();
     let address   = 0xff00 | (address_h as u16);
     let value     = gb.get_mmu().read_u8(address);
@@ -117,7 +117,7 @@ fn ldh_r8_u8(gb: &mut GameBoy, dst: RegisterR8) {
 }
 
 /// Loads a value from a 8bit register into the device memory at the address (0xff00 + r8)
-fn ldh_r8ptr_r8(gb: &mut GameBoy, dst_ptr: RegisterR8, src: RegisterR8) {
+fn ldh_r8ptr_r8(gb: &mut EmulatorCore, dst_ptr: RegisterR8, src: RegisterR8) {
     let address_h = gb.cpu.get_r8(dst_ptr);
     let address   = 0xff00 | (address_h as u16);
     let value     = gb.cpu.get_r8(src);
@@ -125,7 +125,7 @@ fn ldh_r8ptr_r8(gb: &mut GameBoy, dst_ptr: RegisterR8, src: RegisterR8) {
 }
 
 /// Loads a value from the device memory at the address (0xff00 + r8) into a 8bit register.
-fn ldh_r8_r8ptr(gb: &mut GameBoy, dst: RegisterR8, src_ptr: RegisterR8) {
+fn ldh_r8_r8ptr(gb: &mut EmulatorCore, dst: RegisterR8, src_ptr: RegisterR8) {
     let address_h = gb.cpu.get_r8(src_ptr);
     let address   = 0xff00 | (address_h as u16);
     let value     = gb.get_mmu().read_u8(address);
@@ -133,20 +133,20 @@ fn ldh_r8_r8ptr(gb: &mut GameBoy, dst: RegisterR8, src_ptr: RegisterR8) {
 }
 
 /// Pushes the value of a 16bit register on the stack.
-fn push_r16(gb: &mut GameBoy, r16: RegisterR16) {
+fn push_r16(gb: &mut EmulatorCore, r16: RegisterR16) {
     let value = gb.cpu.get_r16(r16);
     gb.cpu.push_u16(value);
 }
 
 /// Pops a 16bit value from the stack into a 16bit register.
-fn pop_r16(gb: &mut GameBoy, r16: RegisterR16) {
+fn pop_r16(gb: &mut EmulatorCore, r16: RegisterR16) {
     let value = gb.cpu.pop_u16();
     gb.cpu.set_r16(r16, value);
 }
 
 /// Pops a 16bit value from the stack into a 16bit register.
 /// Applies a bitmask to the value before writing into the register.
-fn pop_r16_mask(gb: &mut GameBoy, r16: RegisterR16, mask: u16) {
+fn pop_r16_mask(gb: &mut EmulatorCore, r16: RegisterR16, mask: u16) {
     let value = gb.cpu.pop_u16();
     let value_masked = value & mask;
     gb.cpu.set_r16(r16, value_masked);

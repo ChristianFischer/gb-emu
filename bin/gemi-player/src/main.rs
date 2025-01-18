@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,11 +21,12 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 use std::{env, time};
 
-use gemi_core::boot_rom::BootRom;
-use gemi_core::cartridge::Cartridge;
-use gemi_core::cartridge::GameBoyColorSupport;
-use gemi_core::cpu::cpu::CPU_CLOCK_SPEED;
-use gemi_core::gameboy::{DeviceType, GameBoy};
+use libgemi::core::boot_rom::BootRom;
+use libgemi::core::cartridge::Cartridge;
+use libgemi::core::cartridge::GameBoyColorSupport;
+use libgemi::core::cpu::cpu::CPU_CLOCK_SPEED;
+use libgemi::core::device_type::DeviceType;
+use libgemi::GameBoy;
 
 use crate::window::Window;
 
@@ -81,11 +82,9 @@ fn run(window: &mut Window, gb: &mut GameBoy) {
 
         // update window
         {
-            let peripherals = gb.get_peripherals_mut();
-
             window.poll_events();
-            window.apply_button_states(&mut peripherals.input);
-            window.present(peripherals.ppu.get_lcd(), &peripherals.ppu);
+            window.apply_button_states(gb.get_input_mut());
+            window.present(gb.get_ppu().get_lcd(), gb.get_ppu());
         }
 
         // handle frame times
@@ -189,7 +188,7 @@ fn main() -> Result<(), String> {
     gb.initialize();
 
     // determine the title based on the cartridge available
-    let title = match gb.get_peripherals().mem.get_cartridge() {
+    let title = match gb.get_memory().get_cartridge() {
         Some(cartridge) => cartridge.get_title().to_string(),
         None => "GameBoy".to_string(),
     };
@@ -201,7 +200,7 @@ fn main() -> Result<(), String> {
     run(&mut window, &mut gb);
 
     // after running the cartridge, save it's on-chip-RAM, if any
-    gb.get_peripherals().mem.save_cartridge_ram_to_file_if_any()
+    gb.get_memory().save_cartridge_ram_to_file_if_any()
         .map_err(|e| format!("Failed to save cartridge RAM: {}", e))
         ?
     ;

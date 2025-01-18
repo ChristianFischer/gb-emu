@@ -23,8 +23,8 @@ use egui::{ComboBox, Context};
 use egui_tiles::{Container, Tile};
 use rfd::AsyncFileDialog;
 
-use gemi_core::cartridge::Cartridge;
-use gemi_core::ppu::graphic_data::TileMap;
+use libgemi::core::cartridge::Cartridge;
+use libgemi::core::ppu::graphic_data::TileMap;
 
 use crate::behaviour::TreeBehaviour;
 use crate::event::UiEvent;

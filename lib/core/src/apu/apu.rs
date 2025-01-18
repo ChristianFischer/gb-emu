@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,13 +16,14 @@
  */
 
 use crate::apu::audio_output::AudioOutput;
-use crate::apu::channels::channel::{Channel, ChannelType};
 use crate::apu::channels::channel::features::*;
+use crate::apu::channels::channel::{Channel, ChannelType};
 use crate::apu::channels::noise::NoiseGenerator;
 use crate::apu::channels::pulse::PulseGenerator;
 use crate::apu::channels::wave::WaveGenerator;
 use crate::apu::mixer::Mixer;
-use crate::gameboy::{Clock, DeviceConfig};
+use crate::device_type::DeviceConfig;
+use crate::emulator_core::Clock;
 use crate::mmu::locations::*;
 use crate::mmu::memory_bus::MemoryBusConnection;
 use crate::utils::{as_bit_flag, get_bit};

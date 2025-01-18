@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,10 +15,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use std::collections::HashSet;
-use gemi_core::gameboy::DeviceType;
-use gemi_core::ppu::graphic_data::DmgDisplayPalette;
 use crate::io_utils::filename_to_symbol;
+use libgemi::core::device_type::DeviceType;
+use libgemi::core::ppu::graphic_data::DmgDisplayPalette;
+use std::collections::HashSet;
 
 
 /// A definition how to modify the colors of the emulator display

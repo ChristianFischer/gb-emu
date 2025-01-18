@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ use crate::apu::channels::generator::SoundGenerator;
 use crate::apu::channels::length_timer::LengthTimer;
 use crate::apu::dac::DigitalAudioConverter;
 use crate::apu::sample::{Sample, SampleResult};
-use crate::gameboy::Clock;
+use crate::emulator_core::Clock;
 use crate::utils::get_bit;
 
 

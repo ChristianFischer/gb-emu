@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,9 @@ use std::ops::Range;
 
 use egui::Ui;
 
-use gemi_core::gameboy::GameBoy;
-use gemi_core::mmu::locations::{MEMORY_LOCATION_OAM_BEGIN, MEMORY_LOCATION_SPRITES_BEGIN};
-use gemi_core::ppu::graphic_data::TileMap;
+use libgemi::core::mmu::locations::{MEMORY_LOCATION_OAM_BEGIN, MEMORY_LOCATION_SPRITES_BEGIN};
+use libgemi::core::ppu::graphic_data::TileMap;
+use libgemi::GameBoy;
 
 use crate::event::UiEvent;
 use crate::event::UiEvent::SelectionChanged;
@@ -30,6 +30,7 @@ use crate::state::EmulatorState;
 use crate::ui::memory_editor::MemoryEditor;
 use crate::ui::style::GemiStyle;
 use crate::views::View;
+
 
 /// A view to display the emulator's memory.
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -176,13 +177,13 @@ impl MemoryView {
     fn display_memory_editor(&mut self, state: &mut EmulatorState, ui: &mut Ui) {
         let is_paused = state.ui.is_paused();
 
-        if let Some(emu) = state.emu.get_emulator_mut() {
+        if let Some(gb) = state.emu.get_gameboy_mut() {
             // allow editing while paused
             self.memory_editor.set_editable(is_paused);
 
             self.memory_editor.show(
                 ui,
-                emu,
+                gb,
 
                 // reading memory
                 |emu, address| {

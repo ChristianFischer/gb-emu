@@ -8,5 +8,5 @@ indicatif = "0.17.8"
 futures = "0.3.31"
 tokio = { version = "1.41.1", features = ["rt-multi-thread", "macros"] }
 tokio-stream = "0.1.16"
-gemi-core = { path = "../../lib/core" }
+libgemi = { path = "../../lib" }
 tests-shared = { path = "../shared" }

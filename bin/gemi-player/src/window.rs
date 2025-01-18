@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,17 +17,17 @@
 
 extern crate sdl2;
 
-use gemi_core::input::{Input, InputButton};
-use gemi_core::gameboy::GameBoy;
-use gemi_core::mmu::locations::MEMORY_LOCATION_SPRITES_BEGIN;
-use gemi_core::ppu::flags::LcdControlFlag;
-use gemi_core::ppu::graphic_data::{Color, DmgPalette, TileMap, TileSet};
-use gemi_core::ppu::ppu::{LcdBuffer, Ppu, SCREEN_H, SCREEN_W};
+use crate::sound_queue::SoundQueue;
+use libgemi::core::input::{Input, InputButton};
+use libgemi::core::mmu::locations::MEMORY_LOCATION_SPRITES_BEGIN;
+use libgemi::core::ppu::flags::LcdControlFlag;
+use libgemi::core::ppu::graphic_data::{Color, DmgPalette, TileMap, TileSet};
+use libgemi::core::ppu::ppu::{LcdBuffer, Ppu, SCREEN_H, SCREEN_W};
+use libgemi::GameBoy;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::rect::Rect;
 use sdl2::render::{Texture, TextureCreator, UpdateTextureError, WindowCanvas};
-use crate::sound_queue::SoundQueue;
 
 
 #[derive(PartialEq)]
@@ -181,7 +181,7 @@ impl Window {
         let texture_background = BufferedTexture::new(&texture_creator, 256, 256)?;
         let texture_objects    = BufferedTexture::new(&texture_creator, 16*8, 24*8)?;
 
-        let audio = SoundQueue::create(&sdl, &mut gb.get_peripherals_mut().apu)?;
+        let audio = SoundQueue::create(&sdl, gb.get_apu_mut())?;
 
         Ok(Window {
             display_scale,

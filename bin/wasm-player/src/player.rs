@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,12 +20,13 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, ImageData};
 
-use gemi_core::apu::audio_output::{AudioOutputSpec, SamplesReceiver};
-use gemi_core::gameboy::{DeviceType, EmulationType, GameBoy};
-use gemi_core::input::InputButton;
-use gemi_core::mmu::memory_data::MemoryData;
-
 use crate::cartridge::Cartridge;
+use libgemi::core::apu::audio_output::{AudioOutputSpec, SamplesReceiver};
+use libgemi::core::device_type::{DeviceType, EmulationType};
+use libgemi::core::input::InputButton;
+use libgemi::core::mmu::memory_data::MemoryData;
+use libgemi::GameBoy;
+
 
 /// Web Assembly frontend for the emulator.
 /// This will be instantiated from JS provides an interface to the emulator backend.
@@ -159,7 +160,7 @@ impl WasmPlayer {
     /// After doing so, audio samples may be received via [take_audio_samples].
     #[wasm_bindgen]
     pub fn open_audio(&mut self, sample_rate: u32) -> Result<(), JsValue> {
-        self.samples_receiver = self.gb.get_peripherals_mut().apu.get_audio_output().open_channel(AudioOutputSpec {
+        self.samples_receiver = self.gb.get_apu_mut().get_audio_output().open_channel(AudioOutputSpec {
             sample_rate
         });
 
@@ -197,7 +198,7 @@ impl WasmPlayer {
     #[wasm_bindgen]
     pub fn save_cartridge_ram(&self) -> Option<Vec<u8>> {
         self.gb
-            .get_peripherals().mem
+            .get_memory()
             .get_cartridge()
             .as_ref()
             .map(|cartridge| {
@@ -231,7 +232,7 @@ impl WasmPlayer {
 
     /// Render the current frame to the canvas.
     pub fn render_frame(&mut self) -> Result<(), JsValue> {
-        let frame = self.gb.get_peripherals().ppu.get_lcd();
+        let frame = self.gb.get_ppu().get_lcd();
         let image = ImageData::new_with_u8_clamped_array_and_sh(
             wasm_bindgen::Clamped(frame.get_pixels_as_slice()),
             frame.get_width(),

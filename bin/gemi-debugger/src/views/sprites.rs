@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,9 @@ use std::cmp::max;
 
 use egui::{Color32, Grid, Label, ScrollArea, Ui, Vec2, Widget};
 
-use gemi_core::gameboy::GameBoy;
-use gemi_core::mmu::locations::MEMORY_LOCATION_VRAM_BEGIN;
-use gemi_core::ppu::graphic_data::TileSet;
+use libgemi::core::mmu::locations::MEMORY_LOCATION_VRAM_BEGIN;
+use libgemi::core::ppu::graphic_data::TileSet;
+use libgemi::GameBoy;
 
 use crate::event::UiEvent;
 use crate::highlight::test_selection;
@@ -63,11 +63,11 @@ impl View for SpritesView {
 
 
     fn ui(&mut self, state: &mut EmulatorState, ui: &mut Ui) {
-        if let Some(emu) = state.emu.get_emulator() {
+        if let Some(gb) = state.emu.get_gameboy() {
             let ui_states = &mut state.ui;
 
             // additional VRAM banks only supported on GBC
-            if !emu.get_config().is_gbc_enabled() && self.bank_index > 0 {
+            if !gb.get_config().is_gbc_enabled() && self.bank_index > 0 {
                 ui.label(format!("VRAM Bank #{} only supported on GameBoy Color", self.bank_index));
                 return;
             }
@@ -114,11 +114,11 @@ impl View for SpritesView {
 
                                             if sprite_index < TOTAL_SPRITES {
                                                 self.display_sprite(
-                                                        ui,
-                                                        ui_states,
-                                                        emu,
-                                                        sprite_index,
-                                                        self.bank_index
+                                                    ui,
+                                                    ui_states,
+                                                    gb,
+                                                    sprite_index,
+                                                    self.bank_index
                                                 );
                                             }
                                         }
@@ -153,7 +153,7 @@ impl View for SpritesView {
 impl SpritesView {
     /// Display a single sprite within the grid.
     fn display_sprite(&mut self, ui: &mut Ui, ui_states: &mut UiStates, emu: &GameBoy, sprite_index: usize, bank_index: u8) {
-        let ppu     = &emu.get_peripherals().ppu;
+        let ppu     = emu.get_ppu();
         let sprite  = ppu.get_sprite_image(sprite_index, bank_index);
 
         let highlight_state = test_selection(Selected::Sprite(self.bank_index, sprite_index))

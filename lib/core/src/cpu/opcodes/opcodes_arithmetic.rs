@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,9 +16,9 @@
  */
 
 use crate::cpu::cpu::{CpuFlag, RegisterR16, RegisterR8};
-use crate::gameboy::GameBoy;
-use crate::utils::{carrying_add_u16, carrying_add_u8, carrying_sub_u8};
 use crate::cpu::opcode::{opcode, OpCodeContext, OpCodeResult};
+use crate::emulator_core::EmulatorCore;
+use crate::utils::{carrying_add_u16, carrying_add_u8, carrying_sub_u8};
 
 
 ////////////////////////////////////////////////
@@ -43,7 +43,7 @@ pub mod inc {
     use super::*;
 
     /// Increments a 8bit value.
-    fn increment_u8v(gb: &mut GameBoy, value: u8) -> u8 {
+    fn increment_u8v(gb: &mut EmulatorCore, value: u8) -> u8 {
         let result = value.wrapping_add(1);
 
         gb.cpu.set_flag(CpuFlag::Zero,      result == 0);
@@ -54,14 +54,14 @@ pub mod inc {
     }
 
     /// Increments a 16bit value.
-    fn increment_u16v(_gb: &mut GameBoy, value: u16) -> u16 {
+    fn increment_u16v(_gb: &mut EmulatorCore, value: u16) -> u16 {
         let result = value.wrapping_add(1);
         result
     }
 
     /// Increments a value
     /// r8 <- r8 + 1
-    fn increment_r8(gb: &mut GameBoy, r8: RegisterR8) {
+    fn increment_r8(gb: &mut EmulatorCore, r8: RegisterR8) {
         let value  = gb.cpu.get_r8(r8);
         let result = increment_u8v(gb, value);
         gb.cpu.set_r8(r8, result);
@@ -69,7 +69,7 @@ pub mod inc {
 
     /// Increments a value
     /// r16 <- r16 + 1
-    fn increment_r16(gb: &mut GameBoy, r16: RegisterR16) {
+    fn increment_r16(gb: &mut EmulatorCore, r16: RegisterR16) {
         let value  = gb.cpu.get_r16(r16);
         let result = increment_u16v(gb, value);
         gb.cpu.set_r16(r16, result);
@@ -77,7 +77,7 @@ pub mod inc {
 
     /// Increments a value.
     /// (r16) <- (r16) + 1
-    fn increment_r16ptr(gb: &mut GameBoy, ctx: &mut OpCodeContext, r16_ptr: RegisterR16) -> OpCodeResult {
+    fn increment_r16ptr(gb: &mut EmulatorCore, ctx: &mut OpCodeContext, r16_ptr: RegisterR16) -> OpCodeResult {
         match ctx.get_stage() {
             0 => {
                 let address = gb.cpu.get_r16(r16_ptr);
@@ -133,7 +133,7 @@ pub mod dec {
     use super::*;
 
     /// Decrements a 8bit value.
-    fn decrement_u8v(gb: &mut GameBoy, value: u8) -> u8 {
+    fn decrement_u8v(gb: &mut EmulatorCore, value: u8) -> u8 {
         let result = value.wrapping_sub(1);
     
         gb.cpu.set_flag(CpuFlag::Zero,      result == 0);
@@ -144,14 +144,14 @@ pub mod dec {
     }
     
     /// Decrements a 16bit value.
-    fn decrement_u16v(_gb: &mut GameBoy, value: u16) -> u16 {
+    fn decrement_u16v(_gb: &mut EmulatorCore, value: u16) -> u16 {
         let result = value.wrapping_sub(1);
         result
     }
     
     /// Decrements a value
     /// r8 <- r8 - 1
-    fn decrement_r8(gb: &mut GameBoy, r8: RegisterR8) {
+    fn decrement_r8(gb: &mut EmulatorCore, r8: RegisterR8) {
         let value  = gb.cpu.get_r8(r8);
         let result = decrement_u8v(gb, value);
         gb.cpu.set_r8(r8, result);
@@ -159,7 +159,7 @@ pub mod dec {
     
     /// Decrements a value
     /// r16 <- r16 - 1
-    fn decrement_r16(gb: &mut GameBoy, r16: RegisterR16) {
+    fn decrement_r16(gb: &mut EmulatorCore, r16: RegisterR16) {
         let value  = gb.cpu.get_r16(r16);
         let result = decrement_u16v(gb, value);
         gb.cpu.set_r16(r16, result);
@@ -167,7 +167,7 @@ pub mod dec {
     
     /// Decrements a value.
     /// (r16) <- (r16) - 1
-    fn decrement_r16ptr(gb: &mut GameBoy, ctx: &mut OpCodeContext, r16_ptr: RegisterR16) -> OpCodeResult {
+    fn decrement_r16ptr(gb: &mut EmulatorCore, ctx: &mut OpCodeContext, r16_ptr: RegisterR16) -> OpCodeResult {
         match ctx.get_stage() {
             0 => {
                 let address = gb.cpu.get_r16(r16_ptr);
@@ -224,7 +224,7 @@ pub mod add {
 
     /// Adds two values and stores it into a 8bit register.
     /// r8 <- r8 + value + (carry flag, if add_carry)
-    fn add_r8_u8v(gb: &mut GameBoy, r8: RegisterR8, value: u8, add_carry: bool) {
+    fn add_r8_u8v(gb: &mut EmulatorCore, r8: RegisterR8, value: u8, add_carry: bool) {
         let current_carry = add_carry && gb.cpu.is_flag_set(CpuFlag::Carry);
         let current_value = gb.cpu.get_r8(r8);
         let (result, half_carry, carry) = carrying_add_u8(current_value, value, current_carry);
@@ -238,21 +238,21 @@ pub mod add {
 
     /// Adds two values and stores it into a 8bit register.
     /// dst <- dst + u8 + (carry flag, if add_carry)
-    fn add_r8_u8(gb: &mut GameBoy, dst: RegisterR8, add_carry: bool) {
+    fn add_r8_u8(gb: &mut EmulatorCore, dst: RegisterR8, add_carry: bool) {
         let value = gb.cpu.fetch_u8();
         add_r8_u8v(gb, dst, value, add_carry);
     }
 
     /// Adds two values and stores it into a 8bit register.
     /// dst <- dst + src + (carry flag, if add_carry)
-    fn add_r8_r8(gb: &mut GameBoy, dst: RegisterR8, src: RegisterR8, add_carry: bool) {
+    fn add_r8_r8(gb: &mut EmulatorCore, dst: RegisterR8, src: RegisterR8, add_carry: bool) {
         let value = gb.cpu.get_r8(src);
         add_r8_u8v(gb, dst, value, add_carry);
     }
 
     /// Adds two values and stores it into a 8bit register.
     /// dst <- dst + (src_ptr) + (carry flag, if add_carry)
-    fn add_r8_r16ptr(gb: &mut GameBoy, dst: RegisterR8, src_ptr: RegisterR16, add_carry: bool) {
+    fn add_r8_r16ptr(gb: &mut EmulatorCore, dst: RegisterR8, src_ptr: RegisterR16, add_carry: bool) {
         let address = gb.cpu.get_r16(src_ptr);
         let value   = gb.get_mmu().read_u8(address);
         add_r8_u8v(gb, dst, value, add_carry);
@@ -260,7 +260,7 @@ pub mod add {
 
     /// Adds two values and stores it into a 16bit register.
     /// r16 <- r16 + value
-    fn add_r16_u16v(gb: &mut GameBoy, r16: RegisterR16, value: u16) {
+    fn add_r16_u16v(gb: &mut EmulatorCore, r16: RegisterR16, value: u16) {
         let current_value = gb.cpu.get_r16(r16);
         let (result, half_carry, carry) = carrying_add_u16(current_value, value, false);
 
@@ -272,7 +272,7 @@ pub mod add {
 
     /// Adds two values and stores it into a 16bit register.
     /// dst <- dst + src
-    fn add_r16_r16(gb: &mut GameBoy, dst: RegisterR16, src: RegisterR16) {
+    fn add_r16_r16(gb: &mut EmulatorCore, dst: RegisterR16, src: RegisterR16) {
         let value = gb.cpu.get_r16(src);
         add_r16_u16v(gb, dst, value);
     }
@@ -316,7 +316,7 @@ pub mod sub {
 
     /// Subtracts a value from another one and stores the result into a 8bit register.
     /// r8 <- r8 - value - (carry flag, if sub_carry)
-    fn sub_r8_u8v(gb: &mut GameBoy, r8: RegisterR8, value: u8, sub_carry: bool) {
+    fn sub_r8_u8v(gb: &mut EmulatorCore, r8: RegisterR8, value: u8, sub_carry: bool) {
         let current_carry = sub_carry && gb.cpu.is_flag_set(CpuFlag::Carry);
         let current_value = gb.cpu.get_r8(r8);
         let (result, half_carry, carry) = carrying_sub_u8(current_value, value, current_carry);
@@ -330,21 +330,21 @@ pub mod sub {
 
     /// Adds two values and stores it into a 8bit register.
     /// dst <- dst + u8 + (carry flag, if add_carry)
-    fn sub_r8_u8(gb: &mut GameBoy, dst: RegisterR8, add_carry: bool) {
+    fn sub_r8_u8(gb: &mut EmulatorCore, dst: RegisterR8, add_carry: bool) {
         let value = gb.cpu.fetch_u8();
         sub_r8_u8v(gb, dst, value, add_carry);
     }
 
     /// Subtracts a value from another one and stores the result into a 8bit register.
     /// dst <- dst - src - (carry flag, if sub_carry)
-    fn sub_r8_r8(gb: &mut GameBoy, dst: RegisterR8, src: RegisterR8, sub_carry: bool) {
+    fn sub_r8_r8(gb: &mut EmulatorCore, dst: RegisterR8, src: RegisterR8, sub_carry: bool) {
         let value = gb.cpu.get_r8(src);
         sub_r8_u8v(gb, dst, value, sub_carry);
     }
 
     /// Subtracts a value from another one and stores the result into a 8bit register.
     /// dst <- dst - (src_ptr) - (carry flag, if sub_carry)
-    fn sub_r8_r16ptr(gb: &mut GameBoy, dst: RegisterR8, src_ptr: RegisterR16, sub_carry: bool) {
+    fn sub_r8_r16ptr(gb: &mut EmulatorCore, dst: RegisterR8, src_ptr: RegisterR16, sub_carry: bool) {
         let address = gb.cpu.get_r16(src_ptr);
         let value   = gb.get_mmu().read_u8(address);
         sub_r8_u8v(gb, dst, value, sub_carry);
@@ -382,12 +382,12 @@ pub mod rl {
     use super::*;
 
     /// Shifts or rotates a value to the left.
-    fn shift_left_u8v(gb: &mut GameBoy, value: u8, op: ShiftOp) -> u8 {
+    fn shift_left_u8v(gb: &mut EmulatorCore, value: u8, op: ShiftOp) -> u8 {
         shift_left_u8v_nc(gb, value, op, NullCheck::Check)
     }
 
     /// Shifts or rotates a value to the left.
-    fn shift_left_u8v_nc(gb: &mut GameBoy, value: u8, op: ShiftOp, nullcheck: NullCheck) -> u8 {
+    fn shift_left_u8v_nc(gb: &mut EmulatorCore, value: u8, op: ShiftOp, nullcheck: NullCheck) -> u8 {
         let carry    = gb.cpu.is_flag_set(CpuFlag::Carry) as u8;
         let left_bit = (value >> 7) & 1;
 
@@ -412,7 +412,7 @@ pub mod rl {
     }
 
     /// Shifts or rotates a value on a 16bit pointer to the left.
-    fn shift_left_r16ptr(gb: &mut GameBoy, ctx: &mut OpCodeContext, r16ptr: RegisterR16, op: ShiftOp) -> OpCodeResult {
+    fn shift_left_r16ptr(gb: &mut EmulatorCore, ctx: &mut OpCodeContext, r16ptr: RegisterR16, op: ShiftOp) -> OpCodeResult {
         match ctx.get_stage() {
             0 => {
                 let address = gb.cpu.get_r16(r16ptr);
@@ -436,48 +436,48 @@ pub mod rl {
     }
 
     /// Performs an arithmetic shift left of the value of a register.
-    fn sla_r8(gb: &mut GameBoy, r8: RegisterR8) {
+    fn sla_r8(gb: &mut EmulatorCore, r8: RegisterR8) {
         let value  = gb.cpu.get_r8(r8);
         let result = shift_left_u8v(gb, value, ShiftOp::ShiftArithmetic);
         gb.cpu.set_r8(r8, result);
     }
 
     /// Performs an arithmetic shift left of the value on a memory location.
-    fn sla_r16ptr(gb: &mut GameBoy, ctx: &mut OpCodeContext, r16ptr: RegisterR16) -> OpCodeResult {
+    fn sla_r16ptr(gb: &mut EmulatorCore, ctx: &mut OpCodeContext, r16ptr: RegisterR16) -> OpCodeResult {
         shift_left_r16ptr(gb, ctx, r16ptr, ShiftOp::ShiftArithmetic)
     }
 
     /// Rotates the value of a register to the left through the carry flag.
-    fn rl_r8(gb: &mut GameBoy, r8: RegisterR8) {
+    fn rl_r8(gb: &mut EmulatorCore, r8: RegisterR8) {
         rl_r8_nc(gb, r8, NullCheck::Check);
     }
 
     /// Rotates the value of a register to the left through the carry flag.
-    fn rl_r8_nc(gb: &mut GameBoy, r8: RegisterR8, nullcheck: NullCheck) {
+    fn rl_r8_nc(gb: &mut EmulatorCore, r8: RegisterR8, nullcheck: NullCheck) {
         let value  = gb.cpu.get_r8(r8);
         let result = shift_left_u8v_nc(gb, value, ShiftOp::RotateThroughCarry, nullcheck);
         gb.cpu.set_r8(r8, result);
     }
 
     /// Rotates the value on a memory location to the left through the carry flag.
-    fn rl_r16ptr(gb: &mut GameBoy, ctx: &mut OpCodeContext, r16ptr: RegisterR16) -> OpCodeResult {
+    fn rl_r16ptr(gb: &mut EmulatorCore, ctx: &mut OpCodeContext, r16ptr: RegisterR16) -> OpCodeResult {
         shift_left_r16ptr(gb, ctx, r16ptr, ShiftOp::RotateThroughCarry)
     }
 
     /// Rotates the value of a register to the left.
-    fn rlc_r8(gb: &mut GameBoy, r8: RegisterR8) {
+    fn rlc_r8(gb: &mut EmulatorCore, r8: RegisterR8) {
         rlc_r8_nc(gb, r8, NullCheck::Check);
     }
 
     /// Rotates the value of a register to the left.
-    fn rlc_r8_nc(gb: &mut GameBoy, r8: RegisterR8, nullcheck: NullCheck) {
+    fn rlc_r8_nc(gb: &mut EmulatorCore, r8: RegisterR8, nullcheck: NullCheck) {
         let value  = gb.cpu.get_r8(r8);
         let result = shift_left_u8v_nc(gb, value, ShiftOp::Rotate, nullcheck);
         gb.cpu.set_r8(r8, result);
     }
 
     /// Rotates the value on a memory location to the left.
-    fn rlc_r16ptr(gb: &mut GameBoy, ctx: &mut OpCodeContext, r16ptr: RegisterR16) -> OpCodeResult {
+    fn rlc_r16ptr(gb: &mut EmulatorCore, ctx: &mut OpCodeContext, r16ptr: RegisterR16) -> OpCodeResult {
         shift_left_r16ptr(gb, ctx, r16ptr, ShiftOp::Rotate)
     }
 
@@ -522,12 +522,12 @@ pub mod rr {
     use super::*;
 
     /// Shifts or rotates a value to the right.
-    fn shift_right_u8v(gb: &mut GameBoy, value: u8, op: ShiftOp) -> u8 {
+    fn shift_right_u8v(gb: &mut EmulatorCore, value: u8, op: ShiftOp) -> u8 {
         shift_right_u8v_nc(gb, value, op, NullCheck::Check)
     }
 
     /// Shifts or rotates a value to the right.
-    fn shift_right_u8v_nc(gb: &mut GameBoy, value: u8, op: ShiftOp, nullcheck: NullCheck) -> u8 {
+    fn shift_right_u8v_nc(gb: &mut EmulatorCore, value: u8, op: ShiftOp, nullcheck: NullCheck) -> u8 {
         let carry    = gb.cpu.is_flag_set(CpuFlag::Carry) as u8;
         let left_bit = (value >> 7) & 1;
         let right_bit= value & 1;
@@ -553,7 +553,7 @@ pub mod rr {
     }
 
     /// Shifts or rotates a value on a 16bit pointer to the right.
-    fn shift_right_r16ptr(gb: &mut GameBoy, ctx: &mut OpCodeContext, r16ptr: RegisterR16, op: ShiftOp) -> OpCodeResult {
+    fn shift_right_r16ptr(gb: &mut EmulatorCore, ctx: &mut OpCodeContext, r16ptr: RegisterR16, op: ShiftOp) -> OpCodeResult {
         match ctx.get_stage() {
             0 => {
                 let address = gb.cpu.get_r16(r16ptr);
@@ -578,60 +578,60 @@ pub mod rr {
 
 
     /// Performs an arithmetic shift right of the value of a register.
-    fn sra_r8(gb: &mut GameBoy, r8: RegisterR8) {
+    fn sra_r8(gb: &mut EmulatorCore, r8: RegisterR8) {
         let value  = gb.cpu.get_r8(r8);
         let result = shift_right_u8v(gb, value, ShiftOp::ShiftArithmetic);
         gb.cpu.set_r8(r8, result);
     }
 
     /// Performs an arithmetic shift right of the value on a memory location.
-    fn sra_r16ptr(gb: &mut GameBoy, ctx: &mut OpCodeContext, r16ptr: RegisterR16) -> OpCodeResult {
+    fn sra_r16ptr(gb: &mut EmulatorCore, ctx: &mut OpCodeContext, r16ptr: RegisterR16) -> OpCodeResult {
         shift_right_r16ptr(gb, ctx, r16ptr, ShiftOp::ShiftArithmetic)
     }
 
     /// Performs an arithmetic shift right of the value of a register.
-    fn srl_r8(gb: &mut GameBoy, r8: RegisterR8) {
+    fn srl_r8(gb: &mut EmulatorCore, r8: RegisterR8) {
         let value  = gb.cpu.get_r8(r8);
         let result = shift_right_u8v(gb, value, ShiftOp::ShiftLogical);
         gb.cpu.set_r8(r8, result);
     }
 
     /// Performs an arithmetic shift right of the value on a memory location.
-    fn srl_r16ptr(gb: &mut GameBoy, ctx: &mut OpCodeContext, r16ptr: RegisterR16) -> OpCodeResult {
+    fn srl_r16ptr(gb: &mut EmulatorCore, ctx: &mut OpCodeContext, r16ptr: RegisterR16) -> OpCodeResult {
         shift_right_r16ptr(gb, ctx, r16ptr, ShiftOp::ShiftLogical)
     }
 
     /// Rotates the value of a register to the right through the carry flag.
-    fn rr_r8(gb: &mut GameBoy, r8: RegisterR8) {
+    fn rr_r8(gb: &mut EmulatorCore, r8: RegisterR8) {
         rr_r8_nc(gb, r8, NullCheck::Check);
     }
 
     /// Rotates the value of a register to the right through the carry flag.
-    fn rr_r8_nc(gb: &mut GameBoy, r8: RegisterR8, nullcheck: NullCheck) {
+    fn rr_r8_nc(gb: &mut EmulatorCore, r8: RegisterR8, nullcheck: NullCheck) {
         let value  = gb.cpu.get_r8(r8);
         let result = shift_right_u8v_nc(gb, value, ShiftOp::RotateThroughCarry, nullcheck);
         gb.cpu.set_r8(r8, result);
     }
 
     /// Rotates the value on a memory location to the right through the carry flag.
-    fn rr_r16ptr(gb: &mut GameBoy, ctx: &mut OpCodeContext, r16ptr: RegisterR16) -> OpCodeResult {
+    fn rr_r16ptr(gb: &mut EmulatorCore, ctx: &mut OpCodeContext, r16ptr: RegisterR16) -> OpCodeResult {
         shift_right_r16ptr(gb, ctx, r16ptr, ShiftOp::RotateThroughCarry)
     }
 
     /// Rotates the value of a register to the right.
-    fn rrc_r8(gb: &mut GameBoy, r8: RegisterR8) {
+    fn rrc_r8(gb: &mut EmulatorCore, r8: RegisterR8) {
         rrc_r8_nc(gb, r8, NullCheck::Check);
     }
 
     /// Rotates the value of a register to the right.
-    fn rrc_r8_nc(gb: &mut GameBoy, r8: RegisterR8, nullcheck: NullCheck) {
+    fn rrc_r8_nc(gb: &mut EmulatorCore, r8: RegisterR8, nullcheck: NullCheck) {
         let value  = gb.cpu.get_r8(r8);
         let result = shift_right_u8v_nc(gb, value, ShiftOp::Rotate, nullcheck);
         gb.cpu.set_r8(r8, result);
     }
 
     /// Rotates the value on a memory location to the right.
-    fn rrc_r16ptr(gb: &mut GameBoy, ctx: &mut OpCodeContext, r16ptr: RegisterR16) -> OpCodeResult {
+    fn rrc_r16ptr(gb: &mut EmulatorCore, ctx: &mut OpCodeContext, r16ptr: RegisterR16) -> OpCodeResult {
         shift_right_r16ptr(gb, ctx, r16ptr, ShiftOp::Rotate)
     }
 
@@ -686,7 +686,7 @@ pub mod swap {
     use super::*;
 
     /// Swaps the low and high nibble of a byte.
-    fn swap_nibbles_u8v(gb: &mut GameBoy, value: u8) -> u8 {
+    fn swap_nibbles_u8v(gb: &mut EmulatorCore, value: u8) -> u8 {
         let low   = (value >> 0) & 0x0f;
         let high  = (value >> 4) & 0x0f;
         let result = (low << 4) | (high);
@@ -698,14 +698,14 @@ pub mod swap {
     }
 
     /// Swaps the low and high nibble of a 8bit register.
-    fn swap_r8(gb: &mut GameBoy, r8: RegisterR8) {
+    fn swap_r8(gb: &mut EmulatorCore, r8: RegisterR8) {
         let value  = gb.cpu.get_r8(r8);
         let result = swap_nibbles_u8v(gb, value);
         gb.cpu.set_r8(r8, result);
     }
 
     /// Swaps the low and high nibble of a byte at the address of a 16bit register pointer.
-    fn swap_r16ptr(gb: &mut GameBoy, ctx: &mut OpCodeContext, r16_ptr: RegisterR16) -> OpCodeResult {
+    fn swap_r16ptr(gb: &mut EmulatorCore, ctx: &mut OpCodeContext, r16_ptr: RegisterR16) -> OpCodeResult {
         match ctx.get_stage() {
             0 => {
                 let address = gb.cpu.get_r16(r16_ptr);
@@ -748,14 +748,14 @@ pub mod set_bit {
 
     /// Set bit n of a given 8bit value.
     /// value | (1 << bit)
-    fn set_bit_u8v(_gb: &mut GameBoy, value: u8, bit: u8) -> u8 {
+    fn set_bit_u8v(_gb: &mut EmulatorCore, value: u8, bit: u8) -> u8 {
         let result = value | (1 << bit);
         result
     }
 
     /// Set bit n of in the given register.
     /// r8 <- r8 | (1 << bit)
-    fn set_bit_r8(gb: &mut GameBoy, r8: RegisterR8, bit: u8) {
+    fn set_bit_r8(gb: &mut EmulatorCore, r8: RegisterR8, bit: u8) {
         let value  = gb.cpu.get_r8(r8);
         let result = set_bit_u8v(gb, value, bit);
         gb.cpu.set_r8(r8, result);
@@ -763,7 +763,7 @@ pub mod set_bit {
 
     /// Set bit n on a memory address.
     /// (r16) <- (r16) | (1 << bit)
-    fn set_bit_r16ptr(gb: &mut GameBoy, ctx: &mut OpCodeContext, r16_ptr: RegisterR16, bit: u8) -> OpCodeResult {
+    fn set_bit_r16ptr(gb: &mut EmulatorCore, ctx: &mut OpCodeContext, r16_ptr: RegisterR16, bit: u8) -> OpCodeResult {
         match ctx.get_stage() {
             0 => {
                 let address = gb.cpu.get_r16(r16_ptr);
@@ -868,14 +868,14 @@ pub mod res_bit {
 
     /// Resets bit n of a given 8bit value.
     /// value & !(1 << bit)
-    fn res_bit_u8v(_gb: &mut GameBoy, value: u8, bit: u8) -> u8 {
+    fn res_bit_u8v(_gb: &mut EmulatorCore, value: u8, bit: u8) -> u8 {
         let result = value & !(1 << bit);
         result
     }
 
     /// Resets bit n of in the given register.
     /// r8 <- r8 & !(1 << bit)
-    fn res_bit_r8(gb: &mut GameBoy, r8: RegisterR8, bit: u8) {
+    fn res_bit_r8(gb: &mut EmulatorCore, r8: RegisterR8, bit: u8) {
         let value  = gb.cpu.get_r8(r8);
         let result = res_bit_u8v(gb, value, bit);
         gb.cpu.set_r8(r8, result);
@@ -883,7 +883,7 @@ pub mod res_bit {
 
     /// Resets bit n on a memory address.
     /// (r16) <- (r16) & !(1 << bit)
-    fn res_bit_r16ptr(gb: &mut GameBoy, ctx: &mut OpCodeContext, r16_ptr: RegisterR16, bit: u8) -> OpCodeResult {
+    fn res_bit_r16ptr(gb: &mut EmulatorCore, ctx: &mut OpCodeContext, r16_ptr: RegisterR16, bit: u8) -> OpCodeResult {
         match ctx.get_stage() {
             0 => {
                 let address = gb.cpu.get_r16(r16_ptr);
@@ -988,7 +988,7 @@ pub mod chk_bit {
 
     /// Checks if bit n of a value is set.
     /// Set the Zero flag, if the bit was 0.
-    fn check_bit_u8v(gb: &mut GameBoy, value: u8, bit: u8) {
+    fn check_bit_u8v(gb: &mut EmulatorCore, value: u8, bit: u8) {
         let result = value & (1 << bit);
         gb.cpu.set_flag(CpuFlag::Zero,      result == 0);
         gb.cpu.set_flag(CpuFlag::Negative,  false);
@@ -997,14 +997,14 @@ pub mod chk_bit {
 
     /// Checks if bit n of a register is set.
     /// Set the Zero flag, if the bit was 0.
-    fn check_bit_r8(gb: &mut GameBoy, r8: RegisterR8, bit: u8) {
+    fn check_bit_r8(gb: &mut EmulatorCore, r8: RegisterR8, bit: u8) {
         let value  = gb.cpu.get_r8(r8);
         check_bit_u8v(gb, value, bit);
     }
 
     /// Checks if bit n on a memory address is set.
     /// Set the Zero flag, if the bit was 0.
-    fn check_bit_r16ptr(gb: &mut GameBoy, r16_ptr: RegisterR16, bit: u8) {
+    fn check_bit_r16ptr(gb: &mut EmulatorCore, r16_ptr: RegisterR16, bit: u8) {
         let address = gb.cpu.get_r16(r16_ptr);
         let value   = gb.get_mmu().read_u8(address);
         check_bit_u8v(gb, value, bit);
@@ -1090,7 +1090,7 @@ pub mod cp {
     use super::*;
 
     /// Compares two values.
-    fn cp_u8v_u8v(gb: &mut GameBoy, value1: u8, value2: u8) {
+    fn cp_u8v_u8v(gb: &mut EmulatorCore, value1: u8, value2: u8) {
         let (_, half_carry, carry) = carrying_sub_u8(value1, value2, false);
 
         gb.cpu.set_flag(CpuFlag::Zero,      value1 == value2);
@@ -1101,7 +1101,7 @@ pub mod cp {
 
     /// Compares two values.
     /// cp r8, u8
-    fn cp_r8_u8(gb: &mut GameBoy, r8: RegisterR8) {
+    fn cp_r8_u8(gb: &mut EmulatorCore, r8: RegisterR8) {
         let value1 = gb.cpu.get_r8(r8);
         let value2 = gb.cpu.fetch_u8();
         cp_u8v_u8v(gb, value1, value2);
@@ -1109,7 +1109,7 @@ pub mod cp {
 
     /// Compares two values.
     /// cp dst, src
-    fn cp_r8_r8(gb: &mut GameBoy, dst: RegisterR8, src: RegisterR8) {
+    fn cp_r8_r8(gb: &mut EmulatorCore, dst: RegisterR8, src: RegisterR8) {
         let value1 = gb.cpu.get_r8(dst);
         let value2 = gb.cpu.get_r8(src);
         cp_u8v_u8v(gb, value1, value2);
@@ -1117,7 +1117,7 @@ pub mod cp {
 
     /// Compares two values.
     /// cp dst, (src_ptr)
-    fn cp_r8_r16ptr(gb: &mut GameBoy, dst: RegisterR8, src_ptr: RegisterR16) {
+    fn cp_r8_r16ptr(gb: &mut EmulatorCore, dst: RegisterR8, src_ptr: RegisterR16) {
         let value1  = gb.cpu.get_r8(dst);
         let address = gb.cpu.get_r16(src_ptr);
         let value2  = gb.get_mmu().read_u8(address);
@@ -1143,7 +1143,7 @@ pub mod and {
 
     /// Computes a bitwise AND.
     /// r8 <- r8 & value
-    fn and_r8_u8v(gb: &mut GameBoy, r8: RegisterR8, value: u8) {
+    fn and_r8_u8v(gb: &mut EmulatorCore, r8: RegisterR8, value: u8) {
         let old_value = gb.cpu.get_r8(r8);
         let result    = old_value & value;
         gb.cpu.set_flag(CpuFlag::Zero,      result == 0);
@@ -1155,21 +1155,21 @@ pub mod and {
 
     /// Computes a bitwise AND.
     /// dst <- dst & u8
-    fn and_r8_u8(gb: &mut GameBoy, dst: RegisterR8) {
+    fn and_r8_u8(gb: &mut EmulatorCore, dst: RegisterR8) {
         let value = gb.cpu.fetch_u8();
         and_r8_u8v(gb, dst, value);
     }
 
     /// Computes a bitwise AND.
     /// dst <- dst & src
-    fn and_r8_r8(gb: &mut GameBoy, dst: RegisterR8, src: RegisterR8) {
+    fn and_r8_r8(gb: &mut EmulatorCore, dst: RegisterR8, src: RegisterR8) {
         let value = gb.cpu.get_r8(src);
         and_r8_u8v(gb, dst, value);
     }
 
     /// Computes a bitwise AND.
     /// dst <- dst & (src_ptr)
-    fn and_r8_r16ptr(gb: &mut GameBoy, dst: RegisterR8, src_ptr: RegisterR16) {
+    fn and_r8_r16ptr(gb: &mut EmulatorCore, dst: RegisterR8, src_ptr: RegisterR16) {
         let address = gb.cpu.get_r16(src_ptr);
         let value   = gb.get_mmu().read_u8(address);
         and_r8_u8v(gb, dst, value);
@@ -1194,7 +1194,7 @@ pub mod or {
 
     /// Computes a bitwise OR.
     /// r8 <- r8 | value
-    fn or_r8_u8v(gb: &mut GameBoy, r8: RegisterR8, value: u8) {
+    fn or_r8_u8v(gb: &mut EmulatorCore, r8: RegisterR8, value: u8) {
         let old_value = gb.cpu.get_r8(r8);
         let result    = old_value | value;
         gb.cpu.set_flag(CpuFlag::Zero,      result == 0);
@@ -1206,21 +1206,21 @@ pub mod or {
 
     /// Computes a bitwise OR.
     /// dst <- dst | u8
-    fn or_r8_u8(gb: &mut GameBoy, dst: RegisterR8) {
+    fn or_r8_u8(gb: &mut EmulatorCore, dst: RegisterR8) {
         let value = gb.cpu.fetch_u8();
         or_r8_u8v(gb, dst, value);
     }
 
     /// Computes a bitwise OR.
     /// dst <- dst | src
-    fn or_r8_r8(gb: &mut GameBoy, dst: RegisterR8, src: RegisterR8) {
+    fn or_r8_r8(gb: &mut EmulatorCore, dst: RegisterR8, src: RegisterR8) {
         let value = gb.cpu.get_r8(src);
         or_r8_u8v(gb, dst, value);
     }
 
     /// Computes a bitwise OR.
     /// dst <- dst | (src_ptr)
-    fn or_r8_r16ptr(gb: &mut GameBoy, dst: RegisterR8, src_ptr: RegisterR16) {
+    fn or_r8_r16ptr(gb: &mut EmulatorCore, dst: RegisterR8, src_ptr: RegisterR16) {
         let address = gb.cpu.get_r16(src_ptr);
         let value   = gb.get_mmu().read_u8(address);
         or_r8_u8v(gb, dst, value);
@@ -1245,7 +1245,7 @@ pub mod xor {
 
     /// Computes a bitwise XOR.
     /// r8 <- r8 ^ value
-    fn xor_r8_u8v(gb: &mut GameBoy, r8: RegisterR8, value: u8) {
+    fn xor_r8_u8v(gb: &mut EmulatorCore, r8: RegisterR8, value: u8) {
         let old_value = gb.cpu.get_r8(r8);
         let result    = old_value ^ value;
         gb.cpu.set_flag(CpuFlag::Zero,      result == 0);
@@ -1257,21 +1257,21 @@ pub mod xor {
 
     /// Computes a bitwise XOR.
     /// dst <- dst ^ src
-    fn xor_r8_r8(gb: &mut GameBoy, dst: RegisterR8, src: RegisterR8) {
+    fn xor_r8_r8(gb: &mut EmulatorCore, dst: RegisterR8, src: RegisterR8) {
         let value = gb.cpu.get_r8(src);
         xor_r8_u8v(gb, dst, value);
     }
 
     /// Computes a bitwise XOR.
     /// dst <- dst ^ (src_ptr)
-    fn xor_r8_r16ptr(gb: &mut GameBoy, dst: RegisterR8, src_ptr: RegisterR16) {
+    fn xor_r8_r16ptr(gb: &mut EmulatorCore, dst: RegisterR8, src_ptr: RegisterR16) {
         let address = gb.cpu.get_r16(src_ptr);
         let value   = gb.get_mmu().read_u8(address);
         xor_r8_u8v(gb, dst, value);
     }
 
 
-    fn xor_r8_u8(gb: &mut GameBoy, r8: RegisterR8) {
+    fn xor_r8_u8(gb: &mut EmulatorCore, r8: RegisterR8) {
         let value = gb.cpu.fetch_u8();
         xor_r8_u8v(gb, r8, value);
     }

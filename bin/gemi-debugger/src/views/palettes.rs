@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,12 +17,13 @@
 
 use egui::{Color32, Grid, Response, Sense, TextStyle, Ui, Vec2};
 
-use gemi_core::gameboy::GameBoy;
-use gemi_core::ppu::graphic_data::{Color, DmgDisplayPalette, DmgPalette, GbcPaletteData, SpritePixelValue};
+use libgemi::core::ppu::graphic_data::{Color, DmgDisplayPalette, DmgPalette, GbcPaletteData, SpritePixelValue};
+use libgemi::GameBoy;
 
 use crate::state::EmulatorState;
 use crate::ui::style::GemiStyle;
 use crate::views::View;
+
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct PaletteView {
@@ -58,8 +59,8 @@ impl View for PaletteView {
     fn ui(&mut self, state: &mut EmulatorState, ui: &mut Ui) {
         self.rt.is_paused = state.ui.is_paused();
 
-        if let Some(emu) = state.emu.get_emulator_mut() {
-            let is_gbc = emu.get_config().is_gbc_enabled();
+        if let Some(gb) = state.emu.get_gameboy_mut() {
+            let is_gbc = gb.get_config().is_gbc_enabled();
 
             // display all palettes within a grid
             Grid::new("palettes")
@@ -67,10 +68,10 @@ impl View for PaletteView {
                     .min_col_width(1.0)
                     .striped(true)
                     .show(ui, |ui| {
-                        self.display_dmg_palettes(ui, emu);
+                        self.display_dmg_palettes(ui, gb);
 
                         if is_gbc {
-                            self.display_gbc_palettes(ui, emu);
+                            self.display_gbc_palettes(ui, gb);
                         }
                     }
             );
@@ -82,7 +83,7 @@ impl View for PaletteView {
 impl PaletteView {
     /// Display a list of all non-color palettes within the current grid.
     fn display_dmg_palettes(&self, ui: &mut Ui, emu: &GameBoy) {
-        let ppu      = &emu.get_peripherals().ppu;
+        let ppu      = emu.get_ppu();
         let palettes = ppu.get_palettes();
 
         self.display_dmg_palette_entry(ui, "BGP",  &palettes.bgp);
@@ -111,7 +112,7 @@ impl PaletteView {
 
     /// Display all palettes of the GameBoy Color.
     fn display_gbc_palettes(&self, ui: &mut Ui, emu: &GameBoy) {
-        let ppu      = &emu.get_peripherals().ppu;
+        let ppu      = emu.get_ppu();
         let palettes = ppu.get_palettes();
         let bg       = palettes.gbc_background_palette.get();
         let obj      = palettes.gbc_object_palette.get();

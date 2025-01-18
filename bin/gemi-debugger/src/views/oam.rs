@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,10 +19,10 @@ use eframe::emath::{Align, Vec2};
 use egui::{ComboBox, Direction, Label, Layout, Sense, TextStyle, Ui, Widget};
 use egui_extras::{Column, TableBuilder, TableRow};
 
-use gemi_core::gameboy::GameBoy;
-use gemi_core::ppu::flags::LcdControlFlag;
-use gemi_core::ppu::graphic_data::Sprite;
-use gemi_core::ppu::sprite_image::SpriteImage;
+use libgemi::core::ppu::flags::LcdControlFlag;
+use libgemi::core::ppu::graphic_data::Sprite;
+use libgemi::core::ppu::sprite_image::SpriteImage;
+use libgemi::GameBoy;
 
 use crate::event::UiEvent;
 use crate::highlight::{test_selection, HighlightState};
@@ -31,6 +31,7 @@ use crate::state::{EmulatorState, UiStates};
 use crate::ui::draw_tile::DrawTile;
 use crate::ui::style::GemiStyle;
 use crate::views::View;
+
 
 const OAM_ENTRIES : usize       = 40;
 const SPRITE_DISPLAY_SIZE : f32 = 16.0;
@@ -89,8 +90,8 @@ impl View for OamView {
     fn ui(&mut self, state: &mut EmulatorState, ui: &mut Ui) {
         let is_paused = state.ui.is_paused();
 
-        if let Some(emu) = state.emu.get_emulator_mut() {
-            let is_gbc      = emu.get_config().is_gbc_enabled();
+        if let Some(gb) = state.emu.get_gameboy_mut() {
+            let is_gbc      = gb.get_config().is_gbc_enabled();
             let ui_states   = &mut state.ui;
             let text_height = ui.text_style_height(&TextStyle::Monospace);
 
@@ -139,7 +140,7 @@ impl View for OamView {
                                     self.display_entry(
                                             ui_states,
                                             row,
-                                            emu,
+                                            gb,
                                             item_height,
                                             is_paused,
                                             is_gbc
@@ -177,7 +178,7 @@ impl View for OamView {
 /// Read the tile number and the bank where to read it from.
 /// The bank number is always zero for DMG, even if the according flag is set.
 fn read_oam_tile_ref(emu: &GameBoy, oam_index: usize) -> (usize, u8) {
-    let oam_entry = emu.get_peripherals().ppu.get_oam()[oam_index];
+    let oam_entry = emu.get_ppu().get_oam()[oam_index];
 
     let tile = oam_entry.tile as usize;
 
@@ -210,7 +211,7 @@ impl OamView {
         let oam_index  = table_row.index();
         let (tile_index, bank) = read_oam_tile_ref(emu, oam_index);
 
-        let ppu      = &emu.get_peripherals().ppu;
+        let ppu      = emu.get_ppu();
         let sprite   = ppu.get_sprite_image(tile_index, bank);
         let entry    = &ppu.get_oam()[oam_index];
         let style    = GemiStyle::VALUE_WRITABLE;
@@ -374,7 +375,7 @@ impl OamView {
 
 
     fn draw_tile(&self, emu: &GameBoy, entry: &Sprite, image: &SpriteImage) -> DrawTile {
-        let ppu      = &emu.get_peripherals().ppu;
+        let ppu      = emu.get_ppu();
         let palettes = ppu.get_palettes();
 
         let mut draw_tile = DrawTile::from(image.clone())

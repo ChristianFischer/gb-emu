@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -67,6 +67,21 @@ pub enum EmulationType {
 
     /// GameBoy Color support enabled.
     GBC,
+}
+
+
+/// A struct containing the setup information of the running device.
+#[derive(Copy, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct DeviceConfig {
+    /// The current device type being running.
+    pub device: DeviceType,
+
+    /// The current emulation mode (DMG compatibility or Color support)
+    pub emulation: EmulationType,
+
+    /// Flag if opcodes should be printed
+    pub print_opcodes: bool,
 }
 
 
@@ -144,6 +159,35 @@ impl DeviceType {
             DeviceType::GameBoyAdvanceSP => "GameBoyAdvance",
             DeviceType::SuperGameBoy     => "SuperGameBoy",
             DeviceType::SuperGameBoy2    => "SuperGameBoy2",
+        }
+    }
+}
+
+
+impl DeviceConfig {
+    /// Preconfigured [DeviceType] for classic GameBoy emulation.
+    pub const DEFAULT_DMG: DeviceConfig = DeviceConfig {
+        device: DeviceType::GameBoyDmg,
+        emulation: EmulationType::DMG,
+        print_opcodes: false,
+    };
+
+
+    /// Preconfigured [DeviceType] for GameBoy Color emulation.
+    pub const DEFAULT_GBC: DeviceConfig = DeviceConfig {
+        device: DeviceType::GameBoyColor,
+        emulation: EmulationType::GBC,
+        print_opcodes: false,
+    };
+
+
+    /// Checks whether the current device is running with GameBoyColor support enabled.
+    /// The running device needs to be a GBC or GBA *and* running a cartridge
+    /// with GameBoy Color support.
+    pub fn is_gbc_enabled(&self) -> bool {
+        match self.emulation {
+            EmulationType::DMG => false,
+            EmulationType::GBC => true,
         }
     }
 }

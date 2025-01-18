@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,12 +19,12 @@ use eframe::epaint::{Color32, Stroke};
 use egui::scroll_area::ScrollBarVisibility;
 use egui::{pos2, vec2, Grid, Pos2, Rect, ScrollArea, Sense, Ui, Widget};
 
-use gemi_core::gameboy::GameBoy;
-use gemi_core::mmu::locations::MEMORY_LOCATION_VRAM_BEGIN;
-use gemi_core::ppu::flags::LcdControlFlag;
-use gemi_core::ppu::graphic_data::{TileMap, TileSet};
-use gemi_core::ppu::ppu::{TILE_ATTR_BIT_H_FLIP, TILE_ATTR_BIT_VRAM_BANK, TILE_ATTR_BIT_V_FLIP};
-use gemi_core::utils::get_bit;
+use libgemi::core::mmu::locations::MEMORY_LOCATION_VRAM_BEGIN;
+use libgemi::core::ppu::flags::LcdControlFlag;
+use libgemi::core::ppu::graphic_data::{TileMap, TileSet};
+use libgemi::core::ppu::ppu::{TILE_ATTR_BIT_H_FLIP, TILE_ATTR_BIT_VRAM_BANK, TILE_ATTR_BIT_V_FLIP};
+use libgemi::core::utils::get_bit;
+use libgemi::GameBoy;
 
 use crate::event::UiEvent;
 use crate::highlight::test_selection;
@@ -70,11 +70,11 @@ impl View for TileMapView {
 
 
     fn ui(&mut self, state: &mut EmulatorState, ui: &mut Ui) {
-        match state.emu.get_emulator() {
+        match state.emu.get_gameboy() {
             None => {}
 
-            Some(emu) => {
-                self.render_tilemap(ui, emu, &mut state.ui);
+            Some(gb) => {
+                self.render_tilemap(ui, gb, &mut state.ui);
             }
         }
     }
@@ -130,7 +130,7 @@ impl TileMapView {
 
     /// Renders the whole tilemap as a 32x32 grid.
     fn render_tilemap_grid(&self, ui: &mut Ui, emu: &GameBoy, ui_states: &mut UiStates) {
-        let ppu     = &emu.get_peripherals().ppu;
+        let ppu     = emu.get_ppu();
         let vram0   = ppu.get_vram(0);
         let tileset = TileSet::by_select_bit(ppu.check_lcdc(LcdControlFlag::TileDataSelect));
 

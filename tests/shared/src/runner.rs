@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,10 +19,11 @@ use std::fmt::{Debug, Formatter};
 use std::panic;
 use std::path::PathBuf;
 
-use gemi_core::boot_rom::BootRom;
-use gemi_core::cartridge::Cartridge;
-use gemi_core::gameboy::{DeviceType, GameBoy};
-use gemi_core::utils::to_u8;
+use libgemi::core::boot_rom::BootRom;
+use libgemi::core::cartridge::Cartridge;
+use libgemi::core::device_type::DeviceType;
+use libgemi::core::utils::to_u8;
+use libgemi::GameBoy;
 
 use crate::checks::blargg_checks::check_blargg_test_passed;
 use crate::checks::check_display::compare_display_with_image;
@@ -142,7 +143,7 @@ pub fn create_device_with_config(workspace: &Workspace, device_type: &DeviceType
 
     // set the color palette for DMG emulation
     if let Some(palette) = setup.dmg_display_palette {
-        gb.get_peripherals_mut().ppu.set_dmg_display_palette(palette);
+        gb.get_ppu_mut().set_dmg_display_palette(palette);
     }
 
     Ok(gb)
@@ -184,7 +185,7 @@ pub fn run_to_stop_conditions(gb: &mut GameBoy, config: &RunConfig) -> Result<u3
 
         // stop running when in HALT state
         if config.stop_on_halt {
-            if !gb.cpu.is_running() {
+            if !gb.get_cpu().is_running() {
                 stop_next_frame = true;
             }
         }
@@ -192,7 +193,7 @@ pub fn run_to_stop_conditions(gb: &mut GameBoy, config: &RunConfig) -> Result<u3
         // stop if the emulator is stuck in an infinite loop
         // like JR -2
         if config.stop_on_infinite_loop {
-            let current_address = gb.cpu.get_instruction_pointer();
+            let current_address = gb.get_cpu().get_instruction_pointer();
             let (addr_high, addr_low) = to_u8(current_address);
 
             // check for JR -2
@@ -282,7 +283,7 @@ pub fn run_test_case_for_result(workspace: &Workspace, test_case: &EmulatorTestC
 
     // enable serial output, if required for any result check
     if result.requires_serial_output() {
-        gb.get_peripherals_mut().serial.enable_output_queue(true);
+        gb.get_serial_port_mut().enable_output_queue(true);
     }
 
     // Run

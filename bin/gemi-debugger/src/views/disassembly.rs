@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@ use std::ops::Range;
 
 use egui::{vec2, Grid, RichText, ScrollArea, Sense, TextStyle, Ui};
 
-use gemi_core::cpu::opcode::{Instruction, Token};
-use gemi_core::gameboy::GameBoy;
+use libgemi::core::cpu::opcode::{Instruction, Token};
+use libgemi::GameBoy;
 
 use crate::event::UiEvent;
 use crate::highlight::test_selection;
@@ -100,9 +100,9 @@ impl View for DisassemblyView {
 
 
     fn ui(&mut self, state: &mut EmulatorState, ui: &mut Ui) {
-        if let Some(emu) = state.emu.get_emulator() {
-            self.update_disassembly(ui, &mut state.ui, emu);
-            self.render_disassembly_list(ui, &mut state.ui, emu);
+        if let Some(gb) = state.emu.get_gameboy() {
+            self.update_disassembly(ui, &mut state.ui, gb);
+            self.render_disassembly_list(ui, &mut state.ui, gb);
         }
     }
 
@@ -136,8 +136,8 @@ impl DisassemblyView {
 
 
     /// Updates the currently cached disassembly as needed.
-    fn update_disassembly(&mut self, ui: &mut Ui, ui_states: &mut UiStates, emu: &GameBoy) {
-        let current_pc = emu.cpu.get_instruction_pointer();
+    fn update_disassembly(&mut self, ui: &mut Ui, ui_states: &mut UiStates, gb: &GameBoy) {
+        let current_pc = gb.get_cpu().get_instruction_pointer();
 
         // when the instruction pointer did change, we want to focus the new active line.
         if self.rt.last_pc != current_pc {
@@ -160,7 +160,7 @@ impl DisassemblyView {
             let visible_lines = Self::compute_visible_lines(ui);
 
             self.rt.disassembly_cache = DisassemblyCache::disassemble_entries_from_pc(
-                emu,
+                gb,
                 visible_lines + ADDITIONAL_LINES_BEYOND_VIEW
             );
 
@@ -181,7 +181,7 @@ impl DisassemblyView {
 
 
     /// Renders the actual UI using the currently stored disassembly cache.
-    fn render_disassembly_list(&mut self, ui: &mut Ui, ui_states: &mut UiStates, emu: &GameBoy) {
+    fn render_disassembly_list(&mut self, ui: &mut Ui, ui_states: &mut UiStates, gb: &GameBoy) {
         let (line_content_height, line_height_padded) = Self::compute_line_height(ui);
         let available_rows = self.rt.disassembly_cache.get_lines_count();
 
@@ -222,7 +222,7 @@ impl DisassemblyView {
                         self.rt.disassembly_cache.get_lines_count() < preferred_number_of_lines
                     &&  !self.rt.disassembly_cache.is_at_end()
                 {
-                    let lines_added = self.rt.disassembly_cache.fill_up(emu, preferred_number_of_lines);
+                    let lines_added = self.rt.disassembly_cache.fill_up(gb, preferred_number_of_lines);
 
                     // request a repaint after changing the number of lines available
                     if lines_added > 0 {
@@ -252,7 +252,7 @@ impl DisassemblyView {
                         .show(ui, |ui| -> Option<()> {
                             // verify all lines which need to be drawn. 
                             // Stops if at least one line fails to be verified
-                            self.rt.disassembly_cache.verify_lines(display_rows.clone(), emu)?;
+                            self.rt.disassembly_cache.verify_lines(display_rows.clone(), gb)?;
                             
                             for row in display_rows {
                                 // get an entry, if still valid, otherwise will leave the rendering
@@ -268,7 +268,7 @@ impl DisassemblyView {
                                 let selection_key = Selected::Instruction(entry.get_address_range());
                                 let highlight_state = test_selection(selection_key.clone())
                                         .of_view(self)
-                                        .compare_with_ui_states(ui_states, emu)
+                                        .compare_with_ui_states(ui_states, gb)
                                 ;
 
                                 // render line highlight, if any
@@ -281,7 +281,7 @@ impl DisassemblyView {
                                 }
 
                                 // render the actual element
-                                entry.render_as_row(ui, emu);
+                                entry.render_as_row(ui, gb);
 
                                 // mouse interaction with the current row
                                 let line_response = ui.interact(line_bounds, ui.id().with(row), Sense::click());
@@ -340,8 +340,8 @@ impl DisassemblyView {
 impl DisassemblyCache {
     /// Creates a new disassembly, starting at the current address of the instruction
     /// pointer, creating a specific number of lines.
-    fn disassemble_entries_from_pc(emu: &GameBoy, max_entries: usize) -> Self {
-        let current_pc = emu.cpu.get_instruction_pointer();
+    fn disassemble_entries_from_pc(gb: &GameBoy, max_entries: usize) -> Self {
+        let current_pc = gb.get_cpu().get_instruction_pointer();
 
         // creates an empty disassembly on the address of the current instruction pointer
         let mut disassembly = Self {
@@ -350,7 +350,7 @@ impl DisassemblyCache {
         };
 
         // fill the disassembly with 'n' entries
-        disassembly.fill_up(emu, max_entries);
+        disassembly.fill_up(gb, max_entries);
 
         disassembly
     }
@@ -608,10 +608,10 @@ impl InstructionDisplayEntry {
 
 
     /// Renders a single instruction into a row
-    fn render_as_row(&self, ui: &mut Ui, emu: &GameBoy) {
+    fn render_as_row(&self, ui: &mut Ui, gb: &GameBoy) {
         // is current
         {
-            let current_pc = emu.cpu.get_instruction_pointer();
+            let current_pc = gb.get_cpu().get_instruction_pointer();
             let is_current = current_pc == self.instruction.opcode_address;
 
             if is_current {

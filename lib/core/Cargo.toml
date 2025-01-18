@@ -8,62 +8,33 @@ flagset = { version = "0.4.6", default-features = false, features = [] }
 serde = { version = "1.0.214", default-features = false, features = ["std"], optional = true }
 zstd = { version = "0.13.2", default-features = false, features = [], optional = true }
 base64 = { version = "0.22.1", default-features = false, features = ["std"], optional = true }
-bincode = { version = "2.0.0-rc.3", default-features = false, features = ["std", "serde"], optional = true }
 
 [features]
-default = [
-    "std",
-    "dyn_alloc",
-    "file_io",
-    "cgb",
-    "apu",
-]
+default = []
 
-# A feature to use the standard library. This may be disabled to support
-# platforms with limited capabilities like embedded devices.
 std = []
 
-# Enables dynamic allocation support.
-# This is required to hold larger data for memory to support cartridges > 32kiB
-# and GameBoyColor support
 dyn_alloc = []
 
-# `file_io` adds functions to load and write RAM and ROM images from and into files.
-# This is enabled by default and may be disabled for environments which do not
-# support file access.
 file_io = [
     "std",
     "dyn_alloc",
 ]
 
-# Enables GameBoyColor support
-# GBC requires additional memory, so disabling will reduce memory usage of the emulator
 cgb = [
     "dyn_alloc",
 ]
 
-# Enables the audio processing unit.
-# Disabling will remove audio support and can be used to reduce executable size.
 apu = [
     "std",
     "dyn_alloc",
 ]
 
-# Enables support for serialisation/deserialisation using the "serde" crate
 serde = [
     "std",
     "dyn_alloc",
-]
-
-# Supports creating and loading snapshots of the whole emulator state.
-# This will add some more dependencies like serialisation using serde,
-# data compression and may increase the executable size noticeable.
-snapshots = [
-    "std",
-    "serde",
-    "serde/serde_derive",
     "flagset/serde",
-    "zstd",
-    "base64",
-    "bincode",
+    "dep:base64",
+    "dep:serde",
+    "dep:zstd",
 ]

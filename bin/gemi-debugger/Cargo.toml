@@ -22,9 +22,12 @@ futures = "0.3.31"
 wasm-bindgen-futures = "0.4"
 
 
-[dependencies.gemi-core]
-path = "../../lib/core"
-features = ["snapshots"]
+[dependencies.libgemi]
+path = "../../lib"
+features = [
+    "serde",
+    "snapshots",
+]
 
 [dependencies.gemi-utils]
 path = "../../lib/utils"

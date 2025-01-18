@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 
 use core::cmp::min;
 
-use crate::gameboy::{Clock, Peripherals};
+use crate::emulator_core::{Clock, Peripherals};
 use crate::mmu::locations::*;
 use crate::mmu::memory::{DmaTransferInfo, DmaTransferState};
 use crate::mmu::memory_bus::{impl_memory_mapper, MemoryBus, MemoryBusConnection, MemoryMapper};

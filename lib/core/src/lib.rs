@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,12 +27,11 @@ pub mod cartridge;
 pub mod cpu;
 pub mod debug;
 pub mod device_type;
-pub mod gameboy;
+pub mod emulator_core;
 pub mod input;
 pub mod mmu;
 pub mod ppu;
 pub mod serial;
-pub mod snapshots;
 pub mod timer;
 pub mod utils;
 

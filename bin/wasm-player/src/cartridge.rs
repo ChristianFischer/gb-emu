@@ -15,8 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use gemi_core::cartridge::Cartridge as NativeCartridge;
-use gemi_core::mmu::memory_data::MemoryData;
+use libgemi::core::cartridge::Cartridge as NativeCartridge;
+use libgemi::core::mmu::memory_data::MemoryData;
 use wasm_bindgen::prelude::wasm_bindgen;
 
 

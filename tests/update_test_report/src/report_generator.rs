@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,12 +15,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+use futures::{future, StreamExt};
+use libgemi::core::device_type::DeviceType;
+use indicatif::ProgressBar;
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::sync::Arc;
-use futures::{future, StreamExt};
-use gemi_core::gameboy::DeviceType;
-use indicatif::ProgressBar;
 use tests_shared::io_utils::{IteratorState, TestConfigVisitor, Workspace};
 use tests_shared::runner::{run_test_case_safe, TestCaseError};
 use tests_shared::test_config::{EmulatorTestCase, EmulatorTestConfig};

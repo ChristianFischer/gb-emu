@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 by Christian Fischer
+ * Copyright (C) 2022-2025 by Christian Fischer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,9 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use gemi_core::gameboy::GameBoy;
-use gemi_core::ppu::graphic_data::TileMap;
 use crate::runner::TestCaseError;
+use libgemi::core::ppu::graphic_data::TileMap;
+use libgemi::GameBoy;
 
 
 /// sequence of tile numbers representing the text 'Passed'.
@@ -30,7 +30,7 @@ const TILE_SEQUENCE_PASSED : [u8; 6] = [ 0x50, 0x61, 0x73, 0x73, 0x65, 0x64 ];
 /// screen by searching for the according tiles on the tile map.
 pub fn check_blargg_test_passed(gb: &GameBoy) -> Result<(), TestCaseError> {
     // get any message written to the serial port
-    let output_message = gb.get_peripherals().serial.get_output_as_text();
+    let output_message = gb.get_serial_port().get_output_as_text();
 
     match output_message.trim().split('\n').into_iter().last() {
         // Passed - return success
